@@ -1,0 +1,10 @@
+cemu
+obj
+tests
+.vscode
+.idea
+*.log
+*.out
+*.bin
+*.txt
+*.dmp
