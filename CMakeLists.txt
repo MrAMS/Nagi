@@ -28,7 +28,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 add_subdirectory(utils)
-add_subdirectory(emu)
+add_subdirectory(cores)
 add_subdirectory(prog)
 add_subdirectory(diff)
 add_dependencies(diff prog)

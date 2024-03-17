@@ -6,7 +6,6 @@
 #include <utility>
 #include <climits>
 
-#include "abstract_emu.hpp"
 
 class memory_bus : public mmio_dev {
 public:

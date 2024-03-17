@@ -10,7 +10,6 @@
 #include <cassert>
 #include <queue>
 
-#include "abstract_emu.hpp"
 
 template<int nr_tlb_entry = 32>
 class la32r_core {
@@ -29,8 +28,12 @@ public:
         csr.reset();
     }
 
-    uint32_t get_pc() {
+    uint32_t get_pc() const{
         return pc;
+    }
+
+    uint32_t get_gpr(uint8_t id) const{
+        return GPR[id];
     }
 
     void csr_cfg(uint32_t index, uint32_t value) {

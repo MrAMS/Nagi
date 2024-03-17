@@ -6,8 +6,8 @@ add_executable(diff ${SOURCES})
 option(CONFIG_EMU "Enable reference" ON)
 
 target_link_libraries(diff PUBLIC fmt::fmt logger)
-if(CONFIG_EMU)
-    target_link_libraries(diff PRIVATE emu)
+if(CONFIG_EMU_CEMU)
+    target_link_libraries(diff PRIVATE cemu)
 endif()
 
 target_include_directories(diff PUBLIC ./)
