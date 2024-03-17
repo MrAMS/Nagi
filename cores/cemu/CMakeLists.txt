@@ -1,0 +1,27 @@
+if(CONFIG_EMU_CEMU)
+    set(SOURCE_DIR "./src")
+    # https://stackoverflow.com/a/57928919
+    MACRO(HEADER_DIRECTORIES return_list)
+        FILE(GLOB_RECURSE new_list *.h *.hpp)
+        SET(dir_list "")
+        FOREACH(file_path ${new_list})
+            GET_FILENAME_COMPONENT(dir_path ${file_path} PATH)
+            SET(dir_list ${dir_list} ${dir_path})
+        ENDFOREACH()
+        LIST(REMOVE_DUPLICATES dir_list)
+        SET(${return_list} ${dir_list})
+    ENDMACRO()
+    HEADER_DIRECTORIES(INCLUDE_DIR)
+    list(APPEND INCLUDE_DIR "./src")
+    set(SOURCES "./abscore_cemu.cpp")
+    # message("INCLUDE_DIR is ${INCLUDE_DIR}")
+endif()
+
+
+add_library(cemu STATIC ${SOURCES})
+target_link_libraries(cemu PUBLIC logger)
+target_include_directories(cemu PRIVATE ${INCLUDE_DIR})
+target_include_directories(cemu PUBLIC ./)
+# for abscore.hpp
+target_include_directories(cemu PUBLIC ../)
+target_compile_features(cemu PUBLIC cxx_std_17)

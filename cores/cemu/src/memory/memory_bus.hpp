@@ -44,7 +44,8 @@ public:
             const auto dev_cfg = it->second;
             auto ret = dev_cfg.dev->do_read(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
             if(dev_cfg.trace_mem){
-                emu_trace_mem(start_addr, size, buffer, false);
+                extern void cemu_trace_mem(uint64_t addr, uint64_t size, const uint8_t* buffer, bool is_write);
+                cemu_trace_mem(start_addr, size, buffer, false);
             }
             return ret;
         }
@@ -60,7 +61,7 @@ public:
             const auto dev_cfg = it->second;
             const auto ret = dev_cfg.dev->do_write(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
             if(dev_cfg.trace_mem){
-                emu_trace_mem(start_addr, size, buffer, true);
+                // emu_trace_mem(start_addr, size, buffer, true);
             }
             return ret;
         }

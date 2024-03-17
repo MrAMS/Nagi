@@ -9,6 +9,7 @@
 #include "memory/memory_bus.hpp"
 #include "memory/ram.hpp"
 #include "core/la32r/la32r_core.hpp"
+#include <functional>
 
 class CoreCEMU : public Core<uint32_t, 32> {
 public:
@@ -51,9 +52,7 @@ public:
     uint32_t get_gpr(uint8_t id) const override{
         return core.get_gpr(id);
     }
-    static void test(){
-        
-    }
+    static void(*trace_callback_gpr)(uint8_t, uint32_t);
 private:
     memory_bus mmio;
     ram func_mem;

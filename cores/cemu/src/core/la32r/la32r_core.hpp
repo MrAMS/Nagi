@@ -9,9 +9,9 @@
 #include <cstring>
 #include <cassert>
 #include <queue>
+#include <functional>
 
-
-template<int nr_tlb_entry = 32>
+template<int nr_tlb_entry>
 class la32r_core {
 public:
     la32r_core(uint32_t core_id, memory_bus &bus, bool trace) : mmu(bus), csr(core_id, pc, mmu), trace(trace) {
@@ -515,7 +515,8 @@ private:
 
     void set_GPR(uint8_t index, uint32_t value) {
         GPR[index] = value;
-        emu_trace_gpr(index, value);
+        extern void cemu_trace_gpr(uint8_t index, uint32_t value);
+        cemu_trace_gpr(index, value);
         if (trace) {
             fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
         }
