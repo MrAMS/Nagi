@@ -13,14 +13,14 @@ if(CONFIG_EMU_CEMU)
     ENDMACRO()
     HEADER_DIRECTORIES(INCLUDE_DIR)
     list(APPEND INCLUDE_DIR "./src")
-    set(SOURCES "./abscore_cemu.cpp")
+    set(SOURCES "./abscore_cemu.hpp")
     # message("INCLUDE_DIR is ${INCLUDE_DIR}")
 endif()
 
 
 add_library(cemu STATIC ${SOURCES})
 target_link_libraries(cemu PUBLIC logger)
-target_include_directories(cemu PRIVATE ${INCLUDE_DIR})
+target_include_directories(cemu PUBLIC ${INCLUDE_DIR})
 target_include_directories(cemu PUBLIC ./)
 # for abscore.hpp
 target_include_directories(cemu PUBLIC ../)

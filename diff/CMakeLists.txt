@@ -13,6 +13,6 @@ endif()
 target_include_directories(diff PUBLIC ./)
 target_compile_features(diff PUBLIC cxx_std_17)
 configure_file (
-    "${CMAKE_CURRENT_SOURCE_DIR}/config.h.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/config.h"
+    "diff_config.h.in"
+    "diff_config.h"
 )

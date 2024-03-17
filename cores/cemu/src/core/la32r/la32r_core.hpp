@@ -9,7 +9,7 @@
 #include <cstring>
 #include <cassert>
 #include <queue>
-#include <functional>
+#include <tuple>
 
 template<int nr_tlb_entry>
 class la32r_core {
@@ -55,6 +55,7 @@ public:
     bool is_end() {
         return end;
     }
+    std::queue<std::tuple<uint8_t, uint32_t>> traces_gpr;
 
 private:
     void exec(uint8_t exc_int) {
@@ -515,10 +516,9 @@ private:
 
     void set_GPR(uint8_t index, uint32_t value) {
         GPR[index] = value;
-        extern void cemu_trace_gpr(uint8_t index, uint32_t value);
-        cemu_trace_gpr(index, value);
         if (trace) {
-            fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
+            traces_gpr.push(std::make_tuple(index, value));
+            // fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
         }
     }
 
