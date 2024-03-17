@@ -5,9 +5,12 @@
 #include "la32r_mmu.hpp"
 #include "la32r_csr.hpp"
 
+#include <cstdint>
 #include <cstring>
 #include <cassert>
 #include <queue>
+
+#include "abstract_emu.hpp"
 
 template<int nr_tlb_entry = 32>
 class la32r_core {
@@ -509,6 +512,7 @@ private:
 
     void set_GPR(uint8_t index, uint32_t value) {
         GPR[index] = value;
+        emu_trace_gpr(index, value);
         if (trace) {
             fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
         }

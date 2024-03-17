@@ -6,9 +6,16 @@
 #include <utility>
 #include <climits>
 
+#include "abstract_emu.hpp"
+
 class memory_bus : public mmio_dev {
 public:
-    bool add_dev(uint64_t start_addr, uint64_t length, mmio_dev *dev, bool raw_addr = false) {
+    using dev_cfg_t = struct {
+        mmio_dev *dev;
+        bool raw_addr;
+        bool trace_mem;
+    };
+    bool add_dev(uint64_t start_addr, uint64_t length, dev_cfg_t dev_cfg ) {
         std::pair<uint64_t, uint64_t> addr_range = std::make_pair(start_addr,start_addr+length);
         if (start_addr % length) return false;
         // check range
@@ -25,7 +32,7 @@ public:
             if (l_max < r_min) return false; // overleap
         }
         // overleap check pass
-        devices[addr_range] = std::make_pair(dev,raw_addr);
+        devices[addr_range] = dev_cfg;
         return true;
     }
     bool do_read(uint64_t start_addr, uint64_t size, unsigned char* buffer) {
@@ -35,7 +42,12 @@ public:
         uint64_t end_addr = start_addr + size;
         if (it->first.first <= start_addr && end_addr <= it->first.second) {
             uint64_t dev_size = it->first.second - it->first.first;
-            return it->second.first->do_read(it->second.second ? start_addr : start_addr % dev_size, size, buffer);
+            const auto dev_cfg = it->second;
+            auto ret = dev_cfg.dev->do_read(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
+            if(dev_cfg.trace_mem){
+                emu_trace_mem(start_addr, size, buffer, false);
+            }
+            return ret;
         }
         else return false;
     }
@@ -46,12 +58,17 @@ public:
         uint64_t end_addr = start_addr + size;
         if (it->first.first <= start_addr && end_addr <= it->first.second) {
             uint64_t dev_size = it->first.second - it->first.first;
-            return it->second.first->do_write(it->second.second ? start_addr : start_addr % dev_size, size, buffer);
+            const auto dev_cfg = it->second;
+            const auto ret = dev_cfg.dev->do_write(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
+            if(dev_cfg.trace_mem){
+                emu_trace_mem(start_addr, size, buffer, true);
+            }
+            return ret;
         }
         else return false;
     }
 private:
-    std::map < std::pair<uint64_t,uint64_t>, std::pair<mmio_dev*,bool> > devices;
+    std::map < std::pair<uint64_t,uint64_t>, dev_cfg_t > devices;
 };
 
 #endif

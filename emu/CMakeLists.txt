@@ -25,6 +25,7 @@ endif()
 
 
 add_library(emu STATIC ${SOURCES} ${EMU_WRAPPER})
+target_link_libraries(emu PUBLIC logger)
 target_include_directories(emu PRIVATE ${INCLUDE_DIR})
 target_include_directories(emu PUBLIC ./)
 target_compile_features(emu PUBLIC cxx_std_17)
