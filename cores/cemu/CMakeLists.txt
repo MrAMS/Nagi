@@ -1,4 +1,4 @@
-if(CONFIG_EMU_CEMU)
+if(CONFIG_CORE_CEMU)
     set(SOURCE_DIR "./src")
     # https://stackoverflow.com/a/57928919
     MACRO(HEADER_DIRECTORIES return_list)
@@ -13,8 +13,8 @@ if(CONFIG_EMU_CEMU)
     ENDMACRO()
     HEADER_DIRECTORIES(INCLUDE_DIR)
     list(APPEND INCLUDE_DIR "./src")
-    set(SOURCES "./abscore_cemu.hpp")
-    # message("INCLUDE_DIR is ${INCLUDE_DIR}")
+    set(SOURCES "./core_cemu.hpp")
+    message("INCLUDE_DIR is ${INCLUDE_DIR}")
 endif()
 
 

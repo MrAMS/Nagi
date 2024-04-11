@@ -1,2 +1,2 @@
 #pragma once
-#cmakedefine01 CONFIG_EMU_CEMU
+#cmakedefine01 CONFIG_CORE_CEMU

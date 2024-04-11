@@ -1,0 +1,3 @@
+[submodule "cores/nagiCore/rtl"]
+	path = cores/nagiCore/rtl
+	url = https://github.com/MrAMS/NagiCore.git

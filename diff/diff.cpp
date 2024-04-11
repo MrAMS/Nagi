@@ -1,12 +1,23 @@
+#include <cassert>
 #include <cstdint>
+#include "core_nagi.hpp"
 #include "diff_config.h"
+#include <cstdio>
 #include <fstream>
 #include <filesystem>
+#include "fmt/core.h"
 #include "logger.hpp"
 #include <fmt/format.h>
+#include <queue>
+#include <string>
+#include <vector>
+#include "disassmble.hpp"
+#include "ringbuf.hpp"
 
 #include "abscore.hpp"
-#include "abscore_cemu.hpp"
+
+#include "cemu/core_cemu.hpp"
+
 
 struct DiffExcep : public std::exception
 {
@@ -17,67 +28,163 @@ struct DiffExcep : public std::exception
 };
 
 #define THROE_DIFF_EXCEPT(FORMAT, ...) \
-    throw DiffExcep(fmt::format(FORMAT " at pc: {:x}", ##__VA_ARGS__, core.get_pc()))
+    throw DiffExcep(fmt::format(FORMAT " at pc: {:x}(core), {:x}(ref)", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
 
-void difftest(Core<uint64_t, uint32_t, 32>& core, Core<uint64_t, uint32_t, 32>& ref, image_t image){
-    core.init(image);
+template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
+void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0){
     ref.init(image);
-    while(1){
-        bool core_run = core.step(1);
-        bool ref_run = ref.step(1);
-        if(core_run != ref_run) THROE_DIFF_EXCEPT("core {}, but ref {}", core_run?"halt":"running", ref_run?"halt":"running");
-        if(!core_run&&!ref_run) break;
-        for(int i=0;i<32;++i)
-            if(core.get_gpr(i)!=ref.get_gpr(i))
-                THROE_DIFF_EXCEPT("GPR x{}: {:x}(core) != {:x}(ref)", i, core.get_gpr(i), ref.get_gpr(i));
-        if(core.trace_able()&&ref.trace_able()){
-            const auto& [core_gpr_updated, core_gpr_trace] = core.check_trace_gpr();
-            const auto& [ref_gpr_updated, ref_gpr_trace] = ref.check_trace_gpr();
+    core.init(image);
+    RingBuf<DATA_T, 8> pc_log;
+    DATA_T pre_pc=0;
+    std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
+    std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
+    for(uint32_t i = 1; i <= max_step || max_step == 0; i++){
+        LOG_INFO("step {}", i);
+        if(!core.step(1)) break;
+        const DATA_T pc = core.get_pc();
+        if(pre_pc!=pc){
+            pre_pc = pc;
+            pc_log.push(pc);
+            // printf("pc %x\n", pc);
+        }
+
+        typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_t;
+        while(core.get_trace(trace_t)){
+            traces_core.push_back(trace_t);
+        }
+        while(traces_core.size()!=0){
+            // if has any unmatched trace, try to match first
+            if(traces_ref.size()!=0){
+                for(auto iter_ref = traces_ref.begin();iter_ref!=traces_ref.end();++iter_ref){
+                    for(auto iter_core=traces_core.begin();iter_core!=traces_core.end();++iter_core){
+                        if(*iter_ref == *iter_core){
+                            printf("matched: %s\n", iter_ref->str().c_str());
+                            iter_core = traces_core.erase(iter_core);
+                            iter_ref = traces_ref.erase(iter_ref);
+                            break;
+                        }
+                    }
+                }
+                if(traces_core.size()==0) break;
+                else if(traces_ref.size()!=0){
+                    std::string trace_str_core = "";
+                    for(auto iter=traces_core.begin();iter!=traces_core.end();iter++){
+                        trace_str_core += iter->str() + "; ";
+                    }
+                    std::string trace_str_ref = "";
+                    for(auto iter=traces_ref.begin();iter!=traces_ref.end();iter++){
+                        trace_str_ref += iter->str() + "; ";
+                    }
+
+                    std::string disassmble_codes = "Last instructions:\n";
+                    DATA_T pc_t=0;
+                    while(pc_log.pop(pc_t)){
+                        const auto res = disassmble_instrs(disassmble_target_t::la32r,
+                            (uint8_t*)image.bin + pc_t - 0x1c000000, 
+                            4, pc_t
+                        );
+                        assert(res.size() == 1);
+                        disassmble_codes += res[0] + "\n";
+                    }
+                    THROE_DIFF_EXCEPT("trace mismatch\nref expect:  {}\ncore return: {}\n{}", trace_str_ref, trace_str_core, disassmble_codes);
+                }
+                // traces_core.size()!=0 && traces_ref.size()==0 reach here
+            }
             
-            const auto& [core_mem_updated, core_mem_trace] = core.check_trace_mem();
-            const auto& [ref_mem_updated, ref_mem_trace] = ref.check_trace_mem();
-            
-            if(core_mem_updated!=ref_mem_updated){
-                THROE_DIFF_EXCEPT("MEM trace mismatch");
+            if(!ref.step(1)) THROE_DIFF_EXCEPT("ref exit too early");
+            while(ref.get_trace(trace_t)){
+                bool matched = false;
+                for(auto iter=traces_core.begin();iter!=traces_core.end();++iter){
+                    if(*iter == trace_t){
+                        matched = true;
+                        printf("matched: %s\n", trace_t.str().c_str());
+                        traces_core.erase(iter);
+                        break;
+                    }
+                }
+                if(!matched){
+                    traces_ref.push_back(trace_t);
+                }
             }
         }
+        // typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_core;
+        // if(core.get_trace(trace_core)){
+        //     printf("core: %s\n", trace_core.str().c_str());
+        //     typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_ref;
+        //     while(1){
+        //         if(ref.get_trace(trace_ref)) break;
+        //         if(!ref.step(1)) THROE_DIFF_EXCEPT("ref exit too early");
+        //     }
+        //     printf("ref:  %s\n", trace_ref.str().c_str());
+        //     if(trace_core != trace_ref){
+        //         std::string trace_str_core = trace_core.str();
+        //         while(core.get_trace(trace_core)){
+        //             trace_str_core += ", " + trace_core.str();
+        //         }
+        //         std::string trace_str_ref = trace_ref.str();
+        //         while(ref.get_trace(trace_ref)){
+        //             trace_str_ref += ", " + trace_ref.str();
+        //             if(trace_str_ref.length() > 100){
+        //                 trace_str_ref += " ...";
+        //                 break;
+        //             }
+        //         }
+        //         std::string disassmble_codes = "Last instructions:\n";
+        //         DATA_T pc_t=0;
+        //         while(pc_log.pop(pc_t)){
+        //             const auto res = disassmble_instrs(disassmble_target_t::la32r,
+        //                 (uint8_t*)image.bin + pc_t - 0x1c000000, 
+        //                 4, pc_t
+        //             );
+        //             assert(res.size() == 1);
+        //             disassmble_codes += res[0] + "\n";
+        //         }
+
+        //         THROE_DIFF_EXCEPT("trace info not match\ncore: {}\nref:  {}\n{}", trace_str_core, trace_str_ref, disassmble_codes);
+        //     }
+        // }
     }
 }
 
 
-CoreCEMU cemu;
-CoreCEMU cemu2;
+static CEMUCore cemu;
+
+static const uint32_t img_dummy[] = {
+    0x02bffc0c, // 	addi.w	$r12,$r0,-1(0xfff)
+    0x03800404, //  ori	$r4,$r0,0x1
+    0x1500000c, //  lu12i.w	$r12,-524288(0x80000) 
+    0x00104a2f, //  add.w	$r15,$r17,$r18
+    // step=11:
+    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+
+    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+};
 
 int main(){
+    bool passed = true;
     LOG_LOG("Hello {}", "Diff");
     uint64_t file_size = std::filesystem::file_size(CONFIG_PROG_BIN_PATH);
     std::ifstream file(CONFIG_PROG_BIN_PATH, std::ios::binary);
     uint8_t* image = new uint8_t[file_size];
     file.read((char*)image, file_size);
+    
+    // NagiCore::get_instance().init(image_t{(uint8_t*)img_dummy, sizeof(img_dummy)/4});
+    // NagiCore::get_instance().step(5);
     try {
-        difftest(cemu, cemu2, {image, file_size});
+        // difftest(cemu, cemu2, {image, file_size});
+#if CONFIG_DIFF_INNER_IMAGE
+        difftest(NagiCore::get_instance(), cemu, {(uint8_t*)img_dummy, sizeof(img_dummy)}, 6+5);
+#else
+        difftest(NagiCore::get_instance(), cemu, {image, file_size});        
+#endif
     } catch (const DiffExcep& excep) {
-        LOG_ERRO("DIFFTEST FAIL\n {}", excep.what());
+        LOG_ERRO("DIFFTEST FAIL\n*{}", excep.what());
+        passed = false;
     }
     delete [] image;
-    
-#if CONFIG_EMU
-
-    // cemu.init({image, file_size});
-    // delete [] image;
-    // // emu_step(1000);
-    // while(cemu.step(1)){
-    //     if(auto [hav, gpr_trace] = cemu.check_trace_gpr(); hav){
-    //         LOG_LOG("GPR {:x} <= {:x}", gpr_trace.id, gpr_trace.val);
-    //     }
-    //     if(auto [hav, mem_trace] = cemu.check_trace_mem(); hav){
-    //         if(mem_trace.is_write){
-    //             LOG_LOG("MEM {:x} <= {:x}", mem_trace.addr, mem_trace.buffer[0]);
-    //         }else{
-    //             LOG_LOG("MEM {:x} => {:x}", mem_trace.addr, mem_trace.buffer[0]);
-    //         }
-    //     }
-    // }
-#endif
+    if(passed)
+        LOG_INFO("PASS DIFFTEST");
     return 0;
 }

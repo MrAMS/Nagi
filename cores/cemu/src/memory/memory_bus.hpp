@@ -2,6 +2,9 @@
 #define XBAR_HPP
 
 #include "mmio_dev.hpp"
+#include <cassert>
+#include <cstdint>
+#include <cstring>
 #include <map>
 #include <utility>
 #include <climits>
@@ -14,7 +17,6 @@ public:
         bool raw_addr;
         bool trace_mem;
     };
-    std::queue<std::tuple<uint64_t, const uint8_t*, uint64_t, bool>> traces_mem;
 
     bool add_dev(uint64_t start_addr, uint64_t length, dev_cfg_t dev_cfg ) {
         std::pair<uint64_t, uint64_t> addr_range = std::make_pair(start_addr,start_addr+length);
@@ -45,9 +47,6 @@ public:
             uint64_t dev_size = it->first.second - it->first.first;
             const auto dev_cfg = it->second;
             auto ret = dev_cfg.dev->do_read(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
-            if(dev_cfg.trace_mem){
-                traces_mem.push(std::make_tuple(start_addr, buffer, size, false));
-            }
             return ret;
         }
         else return false;
@@ -61,9 +60,6 @@ public:
             uint64_t dev_size = it->first.second - it->first.first;
             const auto dev_cfg = it->second;
             const auto ret = dev_cfg.dev->do_write(dev_cfg.raw_addr ? start_addr : start_addr % dev_size, size, buffer);
-            if(dev_cfg.trace_mem){
-                traces_mem.push(std::make_tuple(start_addr, buffer, size, true));
-            }
             return ret;
         }
         else return false;

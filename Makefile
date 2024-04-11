@@ -1,14 +1,24 @@
 BUILD_DIR = ./build
-diff:
+build: 
 	@mkdir -p $(BUILD_DIR)
-	@cd ${BUILD_DIR} && make && ./diff/diff
+	@cd ${BUILD_DIR} && \
+		ninja
+diff: build
+	@cd ${BUILD_DIR} && ./diff/diff
+
+wave:
+	-gtkwave build/wave.fst -a build/wave.sav --saveonexit
+
 init:
 	@mkdir -p $(BUILD_DIR)
 	@cd ${BUILD_DIR} && \
-	cmake ..
+		cmake -GNinja ..
 
 config:
 	@cd ${BUILD_DIR} && \
 	ccmake .
 
-.PHONY: diff init
+clean:
+	-rm -rf ${BUILD_DIR}
+
+.PHONY: build diff wave init clean

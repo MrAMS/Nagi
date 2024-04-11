@@ -1,4 +1,5 @@
 /build*
-/.cache
+.cache/
 .vscode/
 .idea/
+.metals/

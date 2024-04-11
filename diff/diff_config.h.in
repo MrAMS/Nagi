@@ -1,3 +1,4 @@
 #pragma once
 #cmakedefine01 CONFIG_EMU
+#cmakedefine01 CONFIG_DIFF_INNER_IMAGE
 #define CONFIG_PROG_BIN_PATH "${CONFIG_PROG_BIN_PATH}"

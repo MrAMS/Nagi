@@ -1,2 +1,2 @@
 #pragma once
-#define CONFIG_EMU_CEMU 1
+#define CONFIG_CORE_CEMU 1
