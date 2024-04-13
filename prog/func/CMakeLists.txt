@@ -5,7 +5,7 @@ set(CONFIG_PROG_FUNC_EXP "6" CACHE STRING "EXP of FUNC")
 
 add_custom_target(
     prog
-    COMMAND cd "${CMAKE_CURRENT_SOURCE_DIR}" && make all EXP=${CONFIG_PROG_FUNC_EXP}
+    COMMAND cd "${CMAKE_CURRENT_SOURCE_DIR}" && make buildexp EXP=${CONFIG_PROG_FUNC_EXP}
     VERBATIM
 )
 

@@ -17,6 +17,16 @@ tidy:
 	rm -f ${obj_path}/start.s ${obj_path}/start.o ${obj_path}/init.s ${obj_path}/init.o
 	make -C inst clean 
 
+buildexp:
+	@EXP_VALUE=`cat EXP`; \
+    if [ "$$EXP_VALUE" != "$(EXP)" ]; then \
+        echo "Build for new EXP=$(EXP)..."; \
+        rm -rf obj; \
+		echo $(EXP) > EXP; \
+	fi
+	make all
+
+
 ${obj_path}/test.s: ${obj_path}/main.elf
 	loongarch32r-linux-gnusf-objdump -alD ${obj_path}/main.elf > ${obj_path}/test.s
 
