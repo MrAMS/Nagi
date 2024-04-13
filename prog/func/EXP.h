@@ -1,0 +1,1 @@
+#define CONFIG_PROG_FUNC_EXP 9

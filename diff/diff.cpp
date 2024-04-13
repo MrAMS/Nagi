@@ -28,10 +28,10 @@ struct DiffExcep : public std::exception
 };
 
 #define THROE_DIFF_EXCEPT(FORMAT, ...) \
-    throw DiffExcep(fmt::format(FORMAT " at pc: {:x}(core), {:x}(ref)", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
+    throw DiffExcep(fmt::format(FORMAT "\n at pc: {:x}(core), {:x}(ref)\n", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
 
 template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
-void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0){
+void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0, bool show_matched_info = false){
     ref.init(image);
     core.init(image);
     RingBuf<DATA_T, 8> pc_log;
@@ -39,7 +39,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
     for(uint32_t i = 1; i <= max_step || max_step == 0; i++){
-        LOG_INFO("step {}", i);
+        if(show_matched_info) LOG_INFO("step {}", i);
         if(!core.step(1)) break;
         const DATA_T pc = core.get_pc();
         if(pre_pc!=pc){
@@ -58,7 +58,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 for(auto iter_ref = traces_ref.begin();iter_ref!=traces_ref.end();++iter_ref){
                     for(auto iter_core=traces_core.begin();iter_core!=traces_core.end();++iter_core){
                         if(*iter_ref == *iter_core){
-                            printf("matched: %s\n", iter_ref->str().c_str());
+                            if(show_matched_info) printf("matched: %s\n", iter_ref->str().c_str());
                             iter_core = traces_core.erase(iter_core);
                             iter_ref = traces_ref.erase(iter_ref);
                             break;
@@ -97,7 +97,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 for(auto iter=traces_core.begin();iter!=traces_core.end();++iter){
                     if(*iter == trace_t){
                         matched = true;
-                        printf("matched: %s\n", trace_t.str().c_str());
+                        if(show_matched_info) printf("matched: %s\n", trace_t.str().c_str());
                         traces_core.erase(iter);
                         break;
                     }
@@ -107,42 +107,6 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 }
             }
         }
-        // typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_core;
-        // if(core.get_trace(trace_core)){
-        //     printf("core: %s\n", trace_core.str().c_str());
-        //     typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_ref;
-        //     while(1){
-        //         if(ref.get_trace(trace_ref)) break;
-        //         if(!ref.step(1)) THROE_DIFF_EXCEPT("ref exit too early");
-        //     }
-        //     printf("ref:  %s\n", trace_ref.str().c_str());
-        //     if(trace_core != trace_ref){
-        //         std::string trace_str_core = trace_core.str();
-        //         while(core.get_trace(trace_core)){
-        //             trace_str_core += ", " + trace_core.str();
-        //         }
-        //         std::string trace_str_ref = trace_ref.str();
-        //         while(ref.get_trace(trace_ref)){
-        //             trace_str_ref += ", " + trace_ref.str();
-        //             if(trace_str_ref.length() > 100){
-        //                 trace_str_ref += " ...";
-        //                 break;
-        //             }
-        //         }
-        //         std::string disassmble_codes = "Last instructions:\n";
-        //         DATA_T pc_t=0;
-        //         while(pc_log.pop(pc_t)){
-        //             const auto res = disassmble_instrs(disassmble_target_t::la32r,
-        //                 (uint8_t*)image.bin + pc_t - 0x1c000000, 
-        //                 4, pc_t
-        //             );
-        //             assert(res.size() == 1);
-        //             disassmble_codes += res[0] + "\n";
-        //         }
-
-        //         THROE_DIFF_EXCEPT("trace info not match\ncore: {}\nref:  {}\n{}", trace_str_core, trace_str_ref, disassmble_codes);
-        //     }
-        // }
     }
 }
 

@@ -285,7 +285,6 @@ private:
                             csr.raise_trap(exc, va);
                         } else {
                             if(trace) traces.push(std::make_tuple(va, 4, temp, false));
-                            printf("%x %x %d\n", va, temp, instr._2ri12.rd);
                             set_GPR(instr._2ri12.rd, temp);
                         }
                         break;

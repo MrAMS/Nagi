@@ -10,10 +10,10 @@ default:
 all:
 	mkdir -p ${obj_path}
 	make ${obj_path}/inst_ram.coe ${obj_path}/test.s
-	echo ${EXP} > EXP
 
 tidy: 
 	rm -f ${obj_path}/convert ${obj_path}/main.bin ${obj_path}/main.data ${obj_path}/main.elf
+# 	rm -f ${obj_path}/convert ${obj_path}/main.elf
 	rm -f ${obj_path}/start.s ${obj_path}/start.o ${obj_path}/init.s ${obj_path}/init.o
 	make -C inst clean 
 
@@ -39,7 +39,7 @@ ${obj_path}/main.bin: ${obj_path}/main.elf
 ${obj_path}/main.data: ${obj_path}/main.elf
 	loongarch32r-linux-gnusf-objcopy -O binary -j .data ${obj_path}/main.elf ${obj_path}/main.data
 
-${obj_path}/main.elf: bin.lds ${obj_path}/libinst.a ${obj_path}/start.o ${obj_path}/init.o
+${obj_path}/main.elf: bin.lds ${obj_path}/libinst.a ${obj_path}/start.o ${obj_path}/init.o EXP.h
 	loongarch32r-linux-gnusf-ld ${obj_path}/start.o ${obj_path}/init.o ${obj_path}/libinst.a -T bin.lds -o ${obj_path}/main.elf
 
 ${obj_path}/start.s: start.S
@@ -67,4 +67,6 @@ help:
 	@echo "###     make clean: remove *.o, *.a, and ./obj"
 	@echo "###     make help : show help information"
 	@echo "###############################################################"
+
+.PHONY: default all tidy clean help
 

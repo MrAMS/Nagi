@@ -8,3 +8,8 @@ add_custom_target(
     COMMAND cd "${CMAKE_CURRENT_SOURCE_DIR}" && make all EXP=${CONFIG_PROG_FUNC_EXP}
     VERBATIM
 )
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/EXP.in"
+    "${CMAKE_CURRENT_SOURCE_DIR}/EXP.h"
+)
