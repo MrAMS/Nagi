@@ -28,7 +28,7 @@ struct DiffExcep : public std::exception
 };
 
 #define THROE_DIFF_EXCEPT(FORMAT, ...) \
-    throw DiffExcep(fmt::format(FORMAT "\n at pc: {:x}(core), {:x}(ref)\n", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
+    throw DiffExcep(fmt::format(FORMAT "\n at pc: {:x}(core), {:x}(ref)", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
 
 template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0, bool show_matched_info = false){
@@ -36,6 +36,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     core.init(image);
     RingBuf<DATA_T, 8> pc_log;
     DATA_T pre_pc=0;
+    uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
     for(uint32_t i = 1; i <= max_step || max_step == 0; i++){
@@ -43,9 +44,14 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
         if(!core.step(1)) break;
         const DATA_T pc = core.get_pc();
         if(pre_pc!=pc){
+            pc_repeated_cnt = 0;
             pre_pc = pc;
             pc_log.push(pc);
             // printf("pc %x\n", pc);
+        }else{
+            pc_repeated_cnt += 1;
+            if(pc_repeated_cnt > 1000)
+                THROE_DIFF_EXCEPT("pc repeated more than {} steps", pc_repeated_cnt);
         }
 
         typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_t;

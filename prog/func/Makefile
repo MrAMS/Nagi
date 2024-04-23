@@ -49,7 +49,7 @@ ${obj_path}/main.bin: ${obj_path}/main.elf
 ${obj_path}/main.data: ${obj_path}/main.elf
 	loongarch32r-linux-gnusf-objcopy -O binary -j .data ${obj_path}/main.elf ${obj_path}/main.data
 
-${obj_path}/main.elf: bin.lds ${obj_path}/libinst.a ${obj_path}/start.o ${obj_path}/init.o EXP.h
+${obj_path}/main.elf: bin.lds ${obj_path}/libinst.a ${obj_path}/start.o ${obj_path}/init.o
 	loongarch32r-linux-gnusf-ld ${obj_path}/start.o ${obj_path}/init.o ${obj_path}/libinst.a -T bin.lds -o ${obj_path}/main.elf
 
 ${obj_path}/start.s: start.S

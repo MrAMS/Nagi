@@ -2,6 +2,9 @@ if(CONFIG_CORE_NAGICORE)
   option(CONFIG_CORE_NAGICORE_WAVE "trace wave" ON)
 endif()
 
+get_filename_component(CORE_SRC_DIR "./rtl/build" ABSOLUTE)
+# file(GLOB VERILATOR_SRC CONFIGURE_DEPENDS "${CORE_SRC_DIR}/*.h" "${CORE_SRC_DIR}/*.cpp")
+
 add_library(nagicore STATIC ./dpic.cpp ./core_nagi.hpp)
 target_link_libraries(nagicore PUBLIC logger)
 target_compile_features(nagicore PUBLIC cxx_std_14)
@@ -16,7 +19,6 @@ if (NOT verilator_FOUND)
   message(FATAL_ERROR "Verilator was not found. Either install it, or set the VERILATOR_ROOT environment variable")
 endif()
 
-get_filename_component(CORE_SRC_DIR "./rtl/build" ABSOLUTE)
 
 verilate(nagicore
   INCLUDE_DIRS "./"
@@ -24,6 +26,12 @@ verilate(nagicore
   SOURCES ${CORE_SRC_DIR}/Core.sv
 )
 
+# add_custom_target(
+#     buildVerialtor
+#     COMMAND verilator -MMD -cc -O3 --x-assign fast --x-initial fast --noassert -y ${CORE_SRC_DIR} --trace-fst ${CORE_SRC_DIR}/Core.sv
+# )
+
+# add_dependencies(buildChisel buildVerialtor)
 add_dependencies(nagicore buildChisel)
 
 target_include_directories(nagicore PUBLIC ./)

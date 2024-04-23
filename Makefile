@@ -2,7 +2,8 @@ BUILD_DIR = ./build
 build: 
 	@mkdir -p $(BUILD_DIR)
 	@cd ${BUILD_DIR} && \
-		ninja
+		make
+# 		ninja
 diff: build
 	@cd ${BUILD_DIR} && ./diff/diff
 
@@ -12,7 +13,8 @@ wave:
 init:
 	@mkdir -p $(BUILD_DIR)
 	@cd ${BUILD_DIR} && \
-		cmake -GNinja ..
+		cmake ..
+# 		cmake -GNinja ..
 
 config:
 	@cd ${BUILD_DIR} && \

@@ -1,6 +1,8 @@
 include(CMakeDependentOption)
-cmake_dependent_option(CONFIG_CORE_CEMU "CEMU emulator" ON "CONFIG_EMU" OFF)
-cmake_dependent_option(CONFIG_CORE_NAGICORE "Nagi Core" ON "CONFIG_EMU" OFF)
+# cmake_dependent_option(CONFIG_CORE_CEMU "CEMU emulator" ON "CONFIG_EMU" OFF)
+option(CONFIG_CORE_CEMU "CEMU emulator" ON)
+# cmake_dependent_option(CONFIG_CORE_NAGICORE "Nagi Core" ON "CONFIG_EMU" OFF)
+option(CONFIG_CORE_NAGICORE "Nagi Core" ON)
 
 add_library(cores INTERFACE ./abscore.hpp ./absmmio.hpp)
 
