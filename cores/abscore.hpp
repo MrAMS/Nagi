@@ -60,6 +60,9 @@ public:
     // virtual bool check_trace_gpr(trace_gpr_t& trace)=0;
     // virtual bool check_trace_mem(trace_mem_t& trace)=0;
     virtual bool get_trace(trace_t& trace)=0;
-    // if trace updated this step
-    bool trace_updated;
+    uint64_t get_cycs_tot() const{
+        return cycs_tot;
+    }
+protected:
+    uint64_t cycs_tot=0;
 };

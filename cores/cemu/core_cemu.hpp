@@ -33,6 +33,7 @@ public:
     }
     bool step(int step) override{
         while(step--){
+            cycs_tot += 1;
             core.step();
             confreg.tick();
             while (confreg.has_uart()) printf("%c", confreg.get_uart());

@@ -13,9 +13,7 @@
 
 #include "core_nagicore_config.h"
 
-#if CONFIG_CORE_NAGICORE_WAVE
 #include "verilated_fst_c.h"
-#endif
 
 
 class NagiCore : public Core<uint64_t, uint32_t, 32> {
@@ -35,10 +33,11 @@ public:
         verilated_contextp->debug(0);
         // random all bits
         verilated_contextp->randReset(2);
+#if CONFIG_CORE_NAGICORE_WAVE
         verilated_contextp->traceEverOn(true);
         top->trace(tfp.get(), 99);  // Trace 99 levels of hierarchy (or see below)    
         tfp->open("wave.fst");
-
+#endif
         extern absbus<uint32_t> bus_nagicore;
         bus_nagicore.add_device("rom", rom_sart_addr, rom_size, &rom);
         bus_nagicore.add_device("ram", ram_sart_addr, ram_size, &ram);
@@ -46,33 +45,46 @@ public:
     }
     ~NagiCore(){
         top->final();
+#if CONFIG_CORE_NAGICORE_WAVE
         tfp->close();
+#endif
     };
     void init(image_t image) override{
         rom.load_mem(image.bin, image.size);
         LOG_LOG("Nagi ready");
         top->clock = 0;
-        for(int i=0;i<20;++i){
+        const int reset_cycles = 10;
+        for(int i=0;i<reset_cycles*2;++i){
             verilated_contextp->timeInc(1);
             top->clock = 1^top->clock;
+            top->eval();
             top->reset = 1;
             top->eval();
+#if CONFIG_CORE_NAGICORE_WAVE
             tfp->dump(verilated_contextp->time());
+#endif
         }
+        cycs_tot += reset_cycles;
     }
     bool step(int step) override{
-        trace_updated = false;
         while(step--){
+            cycs_tot += 1;
             verilated_contextp->timeInc(1);
             top->reset = 0;
+            top->eval();
             top->clock = 1;
             top->eval();
-            tfp->dump(verilated_contextp->time());
+#if CONFIG_CORE_NAGICORE_WAVE
+            if(cycs_tot > CONFIG_CORE_NAGICORE_WAVE_END - CONFIG_CORE_NAGICORE_WAVE_LEN && cycs_tot <= CONFIG_CORE_NAGICORE_WAVE_END)
+                tfp->dump(verilated_contextp->time());
+#endif
             verilated_contextp->timeInc(1);
-            top->reset = 0;
             top->clock = 0;
             top->eval();
-            tfp->dump(verilated_contextp->time());
+#if CONFIG_CORE_NAGICORE_WAVE
+            if(cycs_tot > CONFIG_CORE_NAGICORE_WAVE_END - CONFIG_CORE_NAGICORE_WAVE_LEN && cycs_tot <= CONFIG_CORE_NAGICORE_WAVE_END)
+                tfp->dump(verilated_contextp->time());
+#endif
         }
         return true;
     }

@@ -28,7 +28,7 @@ struct DiffExcep : public std::exception
 };
 
 #define THROE_DIFF_EXCEPT(FORMAT, ...) \
-    throw DiffExcep(fmt::format(FORMAT "\n at pc: {:x}(core), {:x}(ref)", ##__VA_ARGS__, core.get_pc(), ref.get_pc()))
+    throw DiffExcep(fmt::format(FORMAT "\n core at pc={:x} cyc={}, ref at pc={:x}", ##__VA_ARGS__, core.get_pc(), core.get_cycs_tot(), ref.get_pc()))
 
 template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0, bool show_matched_info = false){

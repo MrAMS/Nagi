@@ -1,5 +1,9 @@
 if(CONFIG_CORE_NAGICORE)
   option(CONFIG_CORE_NAGICORE_WAVE "trace wave" ON)
+  if(CONFIG_CORE_NAGICORE_WAVE)
+    set(CONFIG_CORE_NAGICORE_WAVE_END "1000" CACHE STRING "wave where to end")
+    set(CONFIG_CORE_NAGICORE_WAVE_LEN "1000" CACHE STRING "wave length")
+  endif()
 endif()
 
 get_filename_component(CORE_SRC_DIR "./rtl/build" ABSOLUTE)
