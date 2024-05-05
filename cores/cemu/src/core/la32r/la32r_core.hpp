@@ -254,7 +254,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 1, temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 1, (uint8_t)temp, false));
                             set_GPR(instr._2ri12.rd, static_cast<int32_t>(temp));
                         }
                         break;
@@ -269,7 +269,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 2, temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 2, (uint16_t)temp, false));
                             set_GPR(instr._2ri12.rd, static_cast<int32_t>(temp));
                         }
                         break;
@@ -284,7 +284,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 4, temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 4, (uint32_t)temp, false));
                             set_GPR(instr._2ri12.rd, temp);
                         }
                         break;
@@ -295,7 +295,7 @@ private:
                                                          csr.get_cur_plv(),
                                                          csr.get_crmd_pg(),
                                                          csr.get_asid());
-                        if(trace) traces.push(std::make_tuple(va, 1, GPR[instr._2ri12.rd], true));
+                        if(trace) traces.push(std::make_tuple(va, 1, (uint8_t)GPR[instr._2ri12.rd], true));
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         }
@@ -307,7 +307,7 @@ private:
                                                          csr.get_cur_plv(),
                                                          csr.get_crmd_pg(),
                                                          csr.get_asid());
-                        if(trace) traces.push(std::make_tuple(va, 2, GPR[instr._2ri12.rd], true));
+                        if(trace) traces.push(std::make_tuple(va, 2, (uint16_t)GPR[instr._2ri12.rd], true));
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         }
@@ -319,7 +319,7 @@ private:
                                                          csr.get_cur_plv(),
                                                          csr.get_crmd_pg(),
                                                          csr.get_asid());
-                        if(trace) traces.push(std::make_tuple(va, 4, GPR[instr._2ri12.rd], true));
+                        if(trace) traces.push(std::make_tuple(va, 4, (uint32_t)GPR[instr._2ri12.rd], true));
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         }

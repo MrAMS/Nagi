@@ -152,6 +152,8 @@ int main(){
     } catch (const DiffExcep& excep) {
         LOG_ERRO("DIFFTEST FAIL\n*{}", excep.what());
         passed = false;
+    } catch (const std::exception& excep){
+        LOG_ERRO("EXCEP\n*{}", excep.what());
     }
     delete [] image;
     if(passed)

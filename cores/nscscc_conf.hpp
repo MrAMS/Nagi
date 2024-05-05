@@ -4,7 +4,7 @@
 #include <queue>
 
 template<class ADDR_T>
-class nscscc_conf: public absdev<ADDR_T>{
+class nscscc_conf: public absdev<ADDR_T, uint32_t>{
 public:
     static const uint32_t START_ADDR = 0xbfaf0000;
     static const uint32_t SIZE = 0x10000;
@@ -36,7 +36,7 @@ public:
 
     static const uint32_t VIRTUAL_UART_ADDR = 0xfff0;  // 32'hbfaf_fff0
 
-    nscscc_conf(bool sim = true){
+    nscscc_conf(bool sim = true):absdev<ADDR_T, uint32_t>("nscscc_conf", START_ADDR, SIZE){
         set_switch(sim ? 0x0 : 0xff);
         timer = 0;
         memset(cr,0,sizeof(cr));
@@ -50,77 +50,78 @@ public:
         num_monitor = 1;
         virtual_uart = 0;
     }
-    void read(ADDR_T start_addr, ADDR_T size, uint8_t* buffer) override{
+    uint32_t read(ADDR_T start_addr, uint8_t size) override{
+        start_addr -= this->start_addr;
         if(size!=4)
             throw absmmio_excep(
                 fmt::format("nscscc_conf: must read word")
             );
         switch (start_addr) {
             case CR0_ADDR:
-                *(unsigned int*)buffer = cr[0];
+                return cr[0];
                 break;
             case CR1_ADDR:
-                *(unsigned int*)buffer = cr[1];
+                return cr[1];
                 break;
             case CR2_ADDR:
-                *(unsigned int*)buffer = cr[2];
+                return cr[2];
                 break;
             case CR3_ADDR:
-                *(unsigned int*)buffer = cr[3];
+                return cr[3];
                 break;
             case CR4_ADDR:
-                *(unsigned int*)buffer = cr[4];
+                return cr[4];
                 break;
             case CR5_ADDR:
-                *(unsigned int*)buffer = cr[5];
+                return cr[5];
                 break;
             case CR6_ADDR:
-                *(unsigned int*)buffer = cr[6];
+                return cr[6];
                 break;
             case CR7_ADDR:
-                *(unsigned int*)buffer = cr[7];
+                return cr[7];
                 break;
             case LED_ADDR:
-                *(unsigned int *)buffer = led;
+                return led;
                 break;
             case LED_RG0_ADDR:
-                *(unsigned int *)buffer = led_rg0;
+                return led_rg0;
                 break;
             case LED_RG1_ADDR:
-                *(unsigned int *)buffer = led_rg1;
+                return led_rg1;
                 break;
             case NUM_ADDR:
-                *(unsigned int *)buffer = num;
+                return num;
                 break;
             case SWITCH_ADDR:
-                *(unsigned int *)buffer = switch_data;
+                return switch_data;
                 break;
             case BTN_KEY_ADDR:
-                *(unsigned int *)buffer = 0;
+                return 0;
                 break;
             case BTN_STEP_ADDR:
-                *(unsigned int *)buffer = 0;
+                return 0;
                 break;
             case SW_INTER_ADDR:
-                *(unsigned int *)buffer = switch_inter_data;
+                return switch_inter_data;
                 break;
             case TIMER_ADDR:
-                *(unsigned int *)buffer = timer;
+                return timer;
                 break;
             case SIMU_FLAG_ADDR:
-                *(unsigned int *)buffer = simu_flag;
+                return simu_flag;
                 break;
             case IO_SIMU_ADDR:
-                *(unsigned int *)buffer = io_simu;
+                return io_simu;
                 break;
             case VIRTUAL_UART_ADDR:
-                *(unsigned int *)buffer = virtual_uart;
+                return virtual_uart;
                 break;
             case OPEN_TRACE_ADDR:
-                *(unsigned int *)buffer = open_trace;
+                return open_trace;
                 break;
             case NUM_MONITOR_ADDR:
-                *(unsigned int *)buffer = num_monitor;
+                return num_monitor;
                 break;
             default:
                 throw absmmio_excep(
@@ -128,68 +129,65 @@ public:
                 );
         }
     }
-    void write(ADDR_T start_addr, ADDR_T size, const uint8_t* buffer) override{
-        if(size != 4 || (size == 1 && start_addr != VIRTUAL_UART_ADDR))
-            throw absmmio_excep(
-                fmt::format("nscscc_conf: write size {} invalid", size)
-            );
+    void write(ADDR_T start_addr, uint8_t mask, uint32_t wdata) override{
+        start_addr -= this->start_addr;
         switch (start_addr) {
             case CR0_ADDR:
-                cr[0] = *(unsigned int*)buffer;
+                cr[0] = wdata;
                 break;
             case CR1_ADDR:
-                cr[1] = *(unsigned int*)buffer;
+                cr[1] = wdata;
                 break;
             case CR2_ADDR:
-                cr[2] = *(unsigned int*)buffer;
+                cr[2] = wdata;
                 break;
             case CR3_ADDR:
-                cr[3] = *(unsigned int*)buffer;
+                cr[3] = wdata;
                 break;
             case CR4_ADDR:
-                cr[4] = *(unsigned int*)buffer;
+                cr[4] = wdata;
                 break;
             case CR5_ADDR:
-                cr[5] = *(unsigned int*)buffer;
+                cr[5] = wdata;
                 break;
             case CR6_ADDR:
-                cr[6] = *(unsigned int*)buffer;
+                cr[6] = wdata;
                 break;
             case CR7_ADDR:
-                cr[7] = *(unsigned int*)buffer;
+                cr[7] = wdata;
                 break;
             case TIMER_ADDR:
-                timer = *(unsigned int*)buffer;
+                timer = wdata;
                 break;
             case IO_SIMU_ADDR:
-                io_simu = (((*(unsigned int*)buffer) & 0xffff) << 16) | ((*(unsigned int*)buffer) >> 16);
+                io_simu = (((wdata) & 0xffff) << 16) | ((wdata) >> 16);
                 break;
             case OPEN_TRACE_ADDR: {
-                open_trace = (*(unsigned int*)buffer) != 0;
+                open_trace = (wdata) != 0;
                 break;
             }
             case NUM_MONITOR_ADDR:
-                num_monitor = (*(unsigned int*)buffer) & 1;
+                num_monitor = (wdata) & 1;
                 break;
             case VIRTUAL_UART_ADDR:
-                virtual_uart = (*(char*)buffer) & 0xff;
+                virtual_uart = (*(char*)&wdata) & 0xff;
                 uart_queue.push(virtual_uart);
                 break;
             case NUM_ADDR:
-                num = *(unsigned int*)buffer;
+                num = wdata;
                 break;
             case LED_RG0_ADDR:
-                led_rg0 = *(unsigned int *)buffer;
+                led_rg0 = wdata;
                 break;
             case LED_RG1_ADDR:
-                led_rg1 = *(unsigned int *)buffer;
+                led_rg1 = wdata;
                 break;
             case LED_ADDR:
-                led = *(unsigned int *)buffer;
+                led = wdata;
                 break;
             default:
                 throw absmmio_excep(
-                    fmt::format("nscscc_conf: write address [{:x},{:x}] do not match any", start_addr, start_addr+size)
+                    fmt::format("nscscc_conf: write address {:x} ({:x}) do not match any", start_addr, mask)
                 );
         }
     }

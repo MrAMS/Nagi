@@ -22,7 +22,7 @@ public:
 
     using trace_mem_t = struct{
         addr_t addr;
-        uint8_t size;
+        uint8_t size; // or wmask
         word_t val;
         bool is_write;
     };
