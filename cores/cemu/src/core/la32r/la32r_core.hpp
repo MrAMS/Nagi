@@ -534,6 +534,7 @@ private:
     void set_GPR(uint8_t index, uint32_t value) {
         GPR[index] = value;
         if(trace&&index!=0) traces.push(std::make_tuple(index, 0, value, true));
+        // if(index==14)
             // fprintf(stderr, "pc = %08x,  reg = %02d, val = %08x\n", pc, index, value);
     }
 

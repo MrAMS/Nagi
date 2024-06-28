@@ -1,0 +1,33 @@
+option("WAVE_ENABLE")
+    set_default(true)
+    set_showmenu(true)
+    set_category("wave")
+    set_description("Wave record enable")
+    after_check(function (option)
+        option:set("configvar", option:name(), option:value())
+    end)
+
+option("WAVE_LEN")
+    set_default("10")
+    set_showmenu(true)
+    set_category("wave")
+    set_description("Record last wave x cycles")
+    after_check(function (option)
+        option:set("configvar", option:name(), option:value(), {quote = false})
+    end)
+
+target("nagicore")
+    add_rules("verilator.static")
+    set_toolchains("@verilator")
+    add_files("./rtl/build/*.sv")
+    add_values("verilator.flags", "-O3", "--x-assign", "fast", "--trace-fst", "--timing", "-I"..path.absolute("./rtl/build"))
+
+    add_files("./*.cpp")
+    add_deps("logger")
+    add_includedirs("./", {public = true})
+    add_includedirs("../", {public = true})
+    add_links("z") -- zlib
+
+    add_options("WAVE_ENABLE", "WAVE_LEN")
+    add_configfiles("config_nagicore.h.in")
+    add_includedirs("$(buildir)", {public = true})

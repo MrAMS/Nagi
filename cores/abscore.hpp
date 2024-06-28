@@ -9,6 +9,7 @@
 typedef struct{
     uint8_t *bin;
     uint64_t size;
+    uint64_t offset;
 } image_t;
 
 
@@ -65,4 +66,5 @@ public:
     }
 protected:
     uint64_t cycs_tot=0;
+    uint64_t cycs_wave=0;
 };

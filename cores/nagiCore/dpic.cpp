@@ -1,4 +1,4 @@
-#include "absmmio.hpp"
+// #include "absmmio.hpp"
 #include <cassert>
 #include <cstdint>
 #include <cstdlib>
@@ -8,7 +8,7 @@
 #include "logger.hpp"
 #include "ringbuf.hpp"
 
-#include "VCore__Dpi.h"
+#include "nagicore__Dpi.h"
 
 absbus<uint64_t, uint32_t> bus_nagicore("nagicore bus", 0, 0);
 
@@ -17,69 +17,81 @@ absbus<uint64_t, uint32_t> bus_nagicore("nagicore bus", 0, 0);
 
 RingBuf<NagiCore::trace_t, 8> nagi_traces;
 
-template<typename DATA_T>
-void _dpic_bus_read(uint32_t addr, uint8_t size, DATA_T* rdata){
+void dpic_trace_mem(uint32_t addr, uint8_t size, uint32_t data, uint8_t wmask){
+    uint8_t size_real = 1<<size;
+    if(wmask==0){
+        nagi_traces.push({addr, size_real, data, false});
+    }else{
+        uint32_t wdata = 0;
+        uint8_t* ptr = (uint8_t*)&wdata;
+        for(size_t i=0;i<sizeof(uint32_t);i++){
+            if(!(wmask & (1 << i))) continue;
+            *ptr = data & 0xFF;
+            ptr++;
+            data >>= 8;
+        }
+        nagi_traces.push({addr, size_real, wdata, true});
+    }
+}
+
+void dpic_bus_read(uint32_t addr, uint8_t size, uint32_t* rdata){
     // try{
-        *rdata = bus_nagicore.read(addr, size);
+        *rdata = bus_nagicore.read(addr, 1<<size);
     // }catch(const std::exception &e){
         // LOG_ERRO("BUS READ {}", e.what());
     // }
     // traces_mem.push({addr, size, *rdata, false});
-    // TODO
-    if(!(addr>=0x1c000000&&addr<0x1c000000+0x100000)){
-        DATA_T t=0;
-        memcpy(&t, (uint8_t*)rdata+(addr&(sizeof(DATA_T)-1)), size);
-        nagi_traces.push({addr, size, t, false});
-    }
+    // printf("%x\n", addr);
+    // LOG_LOG("dpic read {:x}({})={:x}", addr, size, *rdata);
+    // if(trace!=0){
+    //     uint32_t t=0;
+    //     memcpy(&t, (uint8_t*)rdata+(addr&(sizeof(uint32_t)-1)), size);
+    //     nagi_traces.push({addr, size, t, false});
+    // }
 }
-
-#define dpic_bus_read_instantiation(DATA_T) \
-    void dpic_bus_read(uint32_t raddr, uint8_t size, DATA_T* rdata){ \
-        _dpic_bus_read(raddr, 1<<size, rdata); \
-    }
-
-dpic_bus_read_instantiation(uint32_t)
 
 // void dpic_fetch_instr(uint32_t pc, uint8_t size, uint32_t* rdata){
 //     bus_nagicore.read(pc, 4, (uint8_t*)rdata);
 // }
 
 void dpic_bus_write(uint32_t addr, uint8_t wmask, const uint32_t wdata){
-    uint8_t sz=4;
-    uint8_t offset = 0;
-    switch (wmask) {
-        case 1:
-            sz = 1;
-            break;
-        case 2:
-            sz = 1;
-            offset = 1;
-            break;
-        case 4:
-            sz = 1;
-            offset = 2;
-            break;
-        case 8:
-            sz = 1;
-            offset = 3;
-            break;
+    // uint8_t sz=4;
+    // uint8_t offset = 0;
+    // switch (wmask) {
+    //     case 1:
+    //         sz = 1;
+    //         break;
+    //     case 2:
+    //         sz = 1;
+    //         offset = 1;
+    //         break;
+    //     case 4:
+    //         sz = 1;
+    //         offset = 2;
+    //         break;
+    //     case 8:
+    //         sz = 1;
+    //         offset = 3;
+    //         break;
         
-        case 3:
-            sz = 2;
-            break;
-        case 12:
-            sz = 2;
-            offset = 2;
-            break;
-        case 0xf:
-            sz = 4;
-            break;
-        default: assert(0);
-    }
+    //     case 3:
+    //         sz = 2;
+    //         break;
+    //     case 12:
+    //         sz = 2;
+    //         offset = 2;
+    //         break;
+    //     case 0xf:
+    //         sz = 4;
+    //         break;
+    //     default: assert(0);
+    // }
     bus_nagicore.write(addr, wmask, wdata);
-    uint32_t wdata_real=0;
-    memcpy((uint8_t*)&wdata_real, (uint8_t*)&wdata+offset, sz);
-    nagi_traces.push({addr, sz, wdata_real, true});
+    // if(trace!=0){
+    //     uint32_t wdata_real=0;
+    //     memcpy((uint8_t*)&wdata_real, (uint8_t*)&wdata+offset, sz);
+    //     nagi_traces.push({addr, sz, wdata_real, true});
+    // }
 }
 
 

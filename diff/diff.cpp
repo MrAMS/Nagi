@@ -1,13 +1,13 @@
 #include <cassert>
 #include <cstdint>
 #include "core_nagi.hpp"
-#include "diff_config.h"
 #include <cstdio>
 #include <fstream>
 #include <filesystem>
 #include "fmt/core.h"
 #include "logger.hpp"
 #include <fmt/format.h>
+#include <memory>
 #include <queue>
 #include <string>
 #include <vector>
@@ -17,7 +17,15 @@
 #include "abscore.hpp"
 
 #include "cemu/core_cemu.hpp"
+#include <csignal>
+#include <cstdlib>
 
+#include "config_diff.h"
+#include "config_prog.h"
+
+#if GPERF_ENABLE
+#include <google/profiler.h>
+#endif
 
 struct DiffExcep : public std::exception
 {
@@ -30,11 +38,42 @@ struct DiffExcep : public std::exception
 #define THROE_DIFF_EXCEPT(FORMAT, ...) \
     throw DiffExcep(fmt::format(FORMAT "\n core at pc={:x} cyc={}, ref at pc={:x}", ##__VA_ARGS__, core.get_pc(), core.get_cycs_tot(), ref.get_pc()))
 
-template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
+#define ADDR_T uint64_t
+#define DATA_T uint32_t
+#define GPR_NUM 32
+
+RingBuf<DATA_T, 8> pc_log;
+
+image_t image;
+
+std::string last_info(){
+    std::string disassmble_codes = "Last instructions:\n";
+    DATA_T pc_t=0;
+    while(pc_log.pop(pc_t)){
+        const auto res = disassmble_instrs(disassmble_target_t::la32r,
+            (uint8_t*)(image.bin) + pc_t - image.offset, 
+            4, pc_t
+        );
+        assert(res.size() == 1);
+        disassmble_codes += res[0] + "\n";
+    }
+    disassmble_codes += "--> \n";
+    pc_t += 4;
+    for(int i=0;i<3&&pc_t-image.offset<image.size;pc_t+=4,++i){
+        const auto res = disassmble_instrs(disassmble_target_t::la32r,
+            (uint8_t*)image.bin + pc_t - image.offset, 
+            4, pc_t
+        );
+        assert(res.size() == 1);
+        disassmble_codes += res[0] + "\n";
+    }
+    return disassmble_codes;
+}
+
+// template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0, bool show_matched_info = false){
     ref.init(image);
     core.init(image);
-    RingBuf<DATA_T, 8> pc_log;
     DATA_T pre_pc=0;
     uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
@@ -81,18 +120,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                     for(auto iter=traces_ref.begin();iter!=traces_ref.end();iter++){
                         trace_str_ref += iter->str() + "; ";
                     }
-
-                    std::string disassmble_codes = "Last instructions:\n";
-                    DATA_T pc_t=0;
-                    while(pc_log.pop(pc_t)){
-                        const auto res = disassmble_instrs(disassmble_target_t::la32r,
-                            (uint8_t*)image.bin + pc_t - 0x1c000000, 
-                            4, pc_t
-                        );
-                        assert(res.size() == 1);
-                        disassmble_codes += res[0] + "\n";
-                    }
-                    THROE_DIFF_EXCEPT("trace mismatch\nref expect:  {}\ncore return: {}\n{}", trace_str_ref, trace_str_core, disassmble_codes);
+                    THROE_DIFF_EXCEPT("trace mismatch\nref expect:  {}\ncore return: {}\n", trace_str_ref, trace_str_core);
                 }
                 // traces_core.size()!=0 && traces_ref.size()==0 reach here
             }
@@ -119,44 +147,83 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
 
 static CEMUCore cemu;
 
-static const uint32_t img_dummy[] = {
-    0x02bffc0c, // 	addi.w	$r12,$r0,-1(0xfff)
-    0x03800404, //  ori	$r4,$r0,0x1
-    0x1500000c, //  lu12i.w	$r12,-524288(0x80000) 
-    0x00104a2f, //  add.w	$r15,$r17,$r18
-    // step=11:
-    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+uint8_t* image_bin;
+void signal_handler(int sig){
+    switch(sig){
+        case SIGINT:
+            LOG_LOG("Caught SIGINT");
+            LOG_ERRO("{}", last_info());
+            break;
+        case SIGSEGV:
 
-    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
-    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
-    0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
-};
+            break;
+        case SIGABRT:
+
+            break;
+        default:
+            LOG_ERRO("Unhandled signal {}", sig);
+            break;
+    }
+#if GPERF_ENABLE
+    ProfilerStop();
+#endif
+    if(image_bin!=nullptr)
+        delete [] image_bin;
+    exit(sig);
+}
 
 int main(){
+#if GPERF_ENABLE
+    ProfilerStart("test.prof");
+#endif
+    signal(SIGINT, signal_handler);
+
     bool passed = true;
     LOG_LOG("Hello {}", "Diff");
-    uint64_t file_size = std::filesystem::file_size(CONFIG_PROG_BIN_PATH);
-    std::ifstream file(CONFIG_PROG_BIN_PATH, std::ios::binary);
-    uint8_t* image = new uint8_t[file_size];
-    file.read((char*)image, file_size);
-    
     // NagiCore::get_instance().init(image_t{(uint8_t*)img_dummy, sizeof(img_dummy)/4});
     // NagiCore::get_instance().step(5);
+    image_bin=nullptr;
     try {
         // difftest(cemu, cemu2, {image, file_size});
-#if CONFIG_DIFF_INNER_IMAGE
-        difftest(NagiCore::get_instance(), cemu, {(uint8_t*)img_dummy, sizeof(img_dummy)}, 6+5);
+#ifndef PROG_BIN_PATH
+        const uint32_t img_dummy[] = {
+            0x02bffc0c, // 	addi.w	$r12,$r0,-1(0xfff)
+            0x03800404, //  ori	$r4,$r0,0x1
+            0x1500000c, //  lu12i.w	$r12,-524288(0x80000) 
+            0x00104a2f, //  add.w	$r15,$r17,$r18
+            // step=11:
+            0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+
+            0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+            0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+            0x1500000c, //  lu12i.w	$r12,-524288(0x80000)
+        };
+        image = {(uint8_t*)img_dummy, sizeof(img_dummy)};
+        difftest(NagiCore::get_instance(), cemu, image, 6+5);
 #else
-        difftest(NagiCore::get_instance(), cemu, {image, file_size});        
+        uint64_t file_size = std::filesystem::file_size(PROG_BIN_PATH);
+        std::ifstream file(PROG_BIN_PATH, std::ios::binary);
+        image_bin = new uint8_t [file_size];
+        file.read((char*)image_bin, file_size);
+        image = {image_bin, file_size, 0x1c000000};
+        difftest(NagiCore::get_instance(), cemu, image, 0, false);        
 #endif
     } catch (const DiffExcep& excep) {
         LOG_ERRO("DIFFTEST FAIL\n*{}", excep.what());
         passed = false;
     } catch (const std::exception& excep){
         LOG_ERRO("EXCEP\n*{}", excep.what());
+        passed = false;
     }
-    delete [] image;
     if(passed)
         LOG_INFO("PASS DIFFTEST");
+    else{
+        LOG_ERRO("{}", last_info());
+    }
+    if(image_bin!=nullptr)
+        delete [] image_bin;
+#if GPERF_ENABLE
+    ProfilerStop();
+#endif
     return 0;
 }

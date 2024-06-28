@@ -5,10 +5,10 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "device/nscscc_confreg.hpp"
-#include "memory/memory_bus.hpp"
-#include "memory/ram.hpp"
-#include "core/la32r/la32r_core.hpp"
+#include "cemu/src/device/nscscc_confreg.hpp"
+#include "src/memory/memory_bus.hpp"
+#include "src/memory/ram.hpp"
+#include "src/core/la32r/la32r_core.hpp"
 #include <cstring>
 #include <queue>
 #include <tuple>

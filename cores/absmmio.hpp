@@ -22,7 +22,7 @@ private:
 template<typename ADDR_T, typename DATA_T>
 class absdev {
 public:
-    absdev<ADDR_T, DATA_T>(const std::string name, ADDR_T start_addr, ADDR_T size):name(name), start_addr(start_addr), end_addr(start_addr + size){
+    absdev(std::string name, ADDR_T start_addr, ADDR_T size) : name(name), start_addr(start_addr), end_addr(start_addr + size){
 
     };
     const std::string name;
@@ -45,7 +45,7 @@ public:
 template<typename ADDR_T, typename DATA_T>
 class absbus : public absdev<ADDR_T, DATA_T> {
 public:
-    absbus<ADDR_T, DATA_T>(const std::string name, ADDR_T start_addr, ADDR_T size):absdev<ADDR_T, DATA_T>(name, start_addr, size){
+    absbus(std::string name, ADDR_T start_addr, ADDR_T size):absdev<ADDR_T, DATA_T>(name, start_addr, size){
 
     };
     void add_device(absdev<ADDR_T, DATA_T>* dev_new){
@@ -103,7 +103,7 @@ public:
         addr -= this->start_addr;
         addr &= ~(ADDR_T)(sizeof(DATA_T)-1);
         uint8_t* ptr = mem.get();
-        for(int i=0;i<sizeof(DATA_T);i++){
+        for(size_t i=0;i<sizeof(DATA_T);i++){
             if(mask & (1 << i)){
                 ptr[addr] = wdata & 0xFF;
             }

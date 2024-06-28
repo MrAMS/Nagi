@@ -1,7 +1,7 @@
 #ifndef NSCSCC_CONFREG
 #define NSCSCC_CONFREG
 
-#include "mmio_dev.hpp"
+#include "cemu/src/memory/mmio_dev.hpp"
 #include <cstdio>
 #include <cstring>
 #include <cassert>

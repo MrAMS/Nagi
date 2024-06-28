@@ -1,1 +1,101 @@
-build/compile_commands.json
+[
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/usr/local/share/verilator/include/verilated.cpp.o", "/usr/local/share/verilator/include/verilated.cpp"],
+  "file": "/usr/local/share/verilator/include/verilated.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/usr/local/share/verilator/include/verilated_dpi.cpp.o", "/usr/local/share/verilator/include/verilated_dpi.cpp"],
+  "file": "/usr/local/share/verilator/include/verilated_dpi.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/usr/local/share/verilator/include/verilated_fst_c.cpp.o", "/usr/local/share/verilator/include/verilated_fst_c.cpp"],
+  "file": "/usr/local/share/verilator/include/verilated_fst_c.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/usr/local/share/verilator/include/verilated_threads.cpp.o", "/usr/local/share/verilator/include/verilated_threads.cpp"],
+  "file": "/usr/local/share/verilator/include/verilated_threads.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024root__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024root__DepSet_he17c9541__0__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_he17c9541__0__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_he17c9541__0__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024root__DepSet_h15761eb9__0__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_h15761eb9__0__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_h15761eb9__0__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024unit__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024unit__DepSet_h1dcc3d95__0__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__DepSet_h1dcc3d95__0__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__DepSet_h1dcc3d95__0__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024root__DepSet_he17c9541__0.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_he17c9541__0.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_he17c9541__0.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024root__DepSet_h15761eb9__0.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_h15761eb9__0.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024root__DepSet_h15761eb9__0.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore___024unit__DepSet_he916bba5__0.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__DepSet_he916bba5__0.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore___024unit__DepSet_he916bba5__0.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore__Syms.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Syms.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Syms.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore__Trace__0__Slow.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Trace__0__Slow.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Trace__0__Slow.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore__Dpi.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Dpi.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Dpi.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/gens/rules/verilator/nagicore__Trace__0.cpp.o", "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Trace__0.cpp"],
+  "file": "build/.gens/nagicore/linux/x86_64/release/rules/verilator/nagicore__Trace__0.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/nagicore/linux/x86_64/release/cores/nagiCore/dpic.cpp.o", "cores/nagiCore/dpic.cpp"],
+  "file": "cores/nagiCore/dpic.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-std=c++20", "-Icores/nagiCore", "-Icores", "-Ibuild", "-Ibuild/.gens/nagicore/linux/x86_64/release/rules/verilator", "-I/usr/local/share/verilator/include", "-I/usr/local/share/verilator/include/vltstd", "-Iutils/logger", "-Iutils/disassmble", "-DVM_COVERAGE=0", "-DVM_SC=0", "-DVM_THREADS=1", "-DVM_TIMING=0", "-DVM_TRACE_FST=1", "-DVM_TRACE_VCD=0", "-o", "build/.objs/diff/linux/x86_64/release/diff/diff.cpp.o", "diff/diff.cpp"],
+  "file": "diff/diff.cpp"
+},
+{
+  "directory": "/home/santiego/proj/arch/nscscc/work/nagi",
+  "arguments": ["/usr/lib/ccache/gcc", "-c", "-m64", "-Wall", "-std=c++17", "-Iutils/disassmble", "-o", "build/.objs/disassmbler/linux/x86_64/release/utils/disassmble/disassmble.cpp.o", "utils/disassmble/disassmble.cpp"],
+  "file": "utils/disassmble/disassmble.cpp"
+}]
