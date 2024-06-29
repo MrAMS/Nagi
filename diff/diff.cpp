@@ -136,7 +136,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 "Instr:\n"
                 " instrs={} IPC={} valid={} cycs={}\n"
                 "BRU:\n"
-                " success={}% tot={} fail={}\n"
+                " success={:.1f}% tot={} fail={}\n"
                 "Mem:\n"
                 " tot={} ld={} st={}\n"
                 " I$ hit rate={:.1f}% tot={}\n"
@@ -148,7 +148,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                     ref.get_perf().valid_instrs,
                     perf.valid_instrs*1.0f/perf.cycles, perf.valid_instrs, perf.cycles,
 
-                    (perf.br_tot-perf.br_tot)*100.0/perf.br_tot, perf.br_tot, perf.br_fail,
+                    (perf.br_tot-perf.br_fail)*100.0/perf.br_tot, perf.br_tot, perf.br_fail,
                     
                     perf.mem_ld+perf.mem_st, perf.mem_ld, perf.mem_st, 
                     perf.cache[0].hit*100.0f/(perf.cache[0].hit+perf.cache[0].miss), perf.cache[0].tot,
