@@ -47,7 +47,7 @@ RingBuf<DATA_T, 8> pc_log;
 image_t image;
 
 std::string last_info(){
-    std::string disassmble_codes = "Last instructions:\n";
+    std::string info = "Last instructions:\n";
     DATA_T pc_t=0;
     while(pc_log.pop(pc_t)){
         const auto res = disassmble_instrs(disassmble_target_t::la32r,
@@ -55,9 +55,9 @@ std::string last_info(){
             4, pc_t
         );
         assert(res.size() == 1);
-        disassmble_codes += res[0] + "\n";
+        info += res[0] + "\n";
     }
-    disassmble_codes += "--> \n";
+    info += "--> \n";
     pc_t += 4;
     for(int i=0;i<3&&pc_t-image.offset<image.size;pc_t+=4,++i){
         const auto res = disassmble_instrs(disassmble_target_t::la32r,
@@ -65,20 +65,20 @@ std::string last_info(){
             4, pc_t
         );
         assert(res.size() == 1);
-        disassmble_codes += res[0] + "\n";
+        info += res[0] + "\n";
     }
-    return disassmble_codes;
+    return info;
 }
 
 // template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
-void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint32_t max_step = 0, bool show_matched_info = false){
+void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint64_t max_step = 0, bool show_matched_info = false){
     ref.init(image);
     core.init(image);
     DATA_T pre_pc=0;
     uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
-    for(uint32_t i = 1; i <= max_step || max_step == 0; i++){
+    for(uint64_t i = 1; i <= max_step || max_step == 0; i++){
         if(show_matched_info) LOG_INFO("step {}", i);
         if(!core.step(1)) break;
         const DATA_T pc = core.get_pc();
@@ -125,7 +125,49 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 // traces_core.size()!=0 && traces_ref.size()==0 reach here
             }
             
-            if(!ref.step(1)) THROE_DIFF_EXCEPT("ref exit too early");
+            if(!ref.step(1)){
+                std::string trace_str_core = "";
+                for(auto iter=traces_core.begin();iter!=traces_core.end();iter++){
+                    trace_str_core += iter->str() + "; ";
+                }
+                LOG_INFO("ref already exit\ncore return: {}", trace_str_core);
+                const auto perf = core.get_perf();
+                LOG_INFO("Performance\n"
+                "Instr:\n"
+                " instrs={} IPC={} valid={} cycs={}\n"
+                "BRU:\n"
+                " success={}% tot={} fail={}\n"
+                "Mem:\n"
+                " tot={} ld={} st={}\n"
+                " I$ hit rate={:.1f}% tot={}\n"
+                " D$ hit rate={:.1f}% tot={} uncache={}\n"
+                "Pipeline:\n"
+                " invalid I$={}({} {:.1f}%) EX={}({} {:.1f}%) D$={}({} {:.1f}%)\n"
+                " stall   I$={}({} {:.1f}%) EX={}({} {:.1f}%) D$={}({} {:.1f}%)\n"
+                ,
+                    ref.get_perf().valid_instrs,
+                    perf.valid_instrs*1.0f/perf.cycles, perf.valid_instrs, perf.cycles,
+
+                    (perf.br_tot-perf.br_tot)*100.0/perf.br_tot, perf.br_tot, perf.br_fail,
+                    
+                    perf.mem_ld+perf.mem_st, perf.mem_ld, perf.mem_st, 
+                    perf.cache[0].hit*100.0f/(perf.cache[0].hit+perf.cache[0].miss), perf.cache[0].tot,
+                    perf.cache[1].hit*100.0f/(perf.cache[1].hit+perf.cache[1].miss), perf.cache[1].tot, perf.cache[1].uncache,
+                    
+                    // perf.pipe[0].invalid, perf.pipe[1].invalid, perf.pipe[2].invalid,
+                    // perf.pipe[0].stall, perf.pipe[1].stall, perf.pipe[2].stall
+                    perf.pipe[0].invalid,   perf.pipe[0].invalid,                       perf.pipe[0].invalid*100.0f/perf.cycles,
+                    perf.pipe[1].invalid,   perf.pipe[1].invalid-perf.pipe[0].invalid,  (perf.pipe[1].invalid-perf.pipe[0].invalid)*100.0f/perf.cycles,
+                    perf.pipe[2].invalid,   perf.pipe[2].invalid-perf.pipe[1].invalid,  (perf.pipe[2].invalid-perf.pipe[1].invalid)*100.0f/perf.cycles,
+
+                    perf.pipe[0].stall,     perf.pipe[0].stall-perf.pipe[1].stall,      (perf.pipe[0].stall-perf.pipe[1].stall)*100.0f/perf.cycles,
+                    perf.pipe[1].stall,     perf.pipe[1].stall-perf.pipe[2].stall,      (perf.pipe[1].stall-perf.pipe[2].stall)*100.0f/perf.cycles,
+                    perf.pipe[2].stall,     perf.pipe[2].stall,                         perf.pipe[2].stall*100.0f/perf.cycles
+
+                );
+                
+                return;
+            }
             while(ref.get_trace(trace_t)){
                 bool matched = false;
                 for(auto iter=traces_core.begin();iter!=traces_core.end();++iter){

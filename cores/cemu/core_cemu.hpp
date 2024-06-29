@@ -66,6 +66,9 @@ public:
         trace.is_write = is_write;
         return true;
     }
+    perf_t get_perf() override{
+        return perf_t{cycs_tot, cycs_tot};
+    }
     
 private:
     memory_bus mmio;

@@ -54,7 +54,6 @@ public:
         rom.load_mem(image.bin, image.size);
         LOG_LOG("Nagi ready");
         top->clock = 0;
-        const int reset_cycles = 10;
         for(int i=0;i<reset_cycles*2;++i){
             verilated_contextp->timeInc(1);
             top->clock = 1^top->clock;
@@ -107,6 +106,11 @@ public:
         extern RingBuf<NagiCore::trace_t, 8> nagi_traces;
         return nagi_traces.pop(trace);
     }
+    perf_t get_perf() override{
+        extern perf_t nagi_perf;
+        nagi_perf.cycles = cycs_tot - reset_cycles;
+        return nagi_perf;
+    }
 
 private:
 
@@ -119,6 +123,7 @@ private:
 
     const uint32_t rom_sart_addr = 0x1c000000;
     const uint32_t ram_sart_addr = 0x00000000;
+    const int reset_cycles = 10;
     dev_ram<uint64_t, uint32_t> rom;
     dev_ram<uint64_t, uint32_t> ram;
     nscscc_conf<uint64_t> confreg;
