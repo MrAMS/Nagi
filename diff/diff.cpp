@@ -20,6 +20,8 @@
 #include <csignal>
 #include <cstdlib>
 
+#include "timer.hpp"
+
 #include "config_diff.h"
 #include "config_prog.h"
 
@@ -72,6 +74,8 @@ std::string last_info(){
 
 // template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint64_t max_step = 0, bool show_matched_info = false){
+    Timer timer_ref, timer_core, timer_tot;
+    timer_tot.start();
     ref.init(image);
     core.init(image);
     DATA_T pre_pc=0;
@@ -80,7 +84,9 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
     for(uint64_t i = 1; i <= max_step || max_step == 0; i++){
         if(show_matched_info) LOG_INFO("step {}", i);
+        timer_core.start();
         if(!core.step(1)) break;
+        timer_core.stop();
         const DATA_T pc = core.get_pc();
         if(pre_pc!=pc){
             pc_repeated_cnt = 0;
@@ -124,14 +130,20 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 }
                 // traces_core.size()!=0 && traces_ref.size()==0 reach here
             }
-            
-            if(!ref.step(1)){
+            timer_ref.start();
+            const bool ref_running = ref.step(1);
+            timer_ref.stop();
+            if(!ref_running){
                 std::string trace_str_core = "";
                 for(auto iter=traces_core.begin();iter!=traces_core.end();iter++){
                     trace_str_core += iter->str() + "; ";
                 }
                 LOG_INFO("ref already exit\ncore return: {}", trace_str_core);
                 const auto perf = core.get_perf();
+                LOG_INFO("Run Time\n"
+                "TOT={}ms DUT={}ms REF={}ms\n",
+                timer_tot.get_ms(), timer_core.get_ms(), timer_ref.get_ms()
+                );
                 LOG_INFO("Performance\n"
                 "Instr:\n"
                 " instrs={} IPC={} valid={} cycs={}\n"
@@ -219,6 +231,18 @@ int main(){
     ProfilerStart("test.prof");
 #endif
     signal(SIGINT, signal_handler);
+    // Timer timer;
+    // timer.start();
+    // sleep(1);
+    // LOG_INFO("timer={}", timer.get_ms());
+    // sleep(1);
+    // LOG_INFO("timer={}", timer.stop().get_ms());
+    // sleep(1);
+    // LOG_INFO("timer={}", timer.get_ms());
+    // timer.start();
+    // sleep(1);
+    // LOG_INFO("timer={}", timer.stop().get_ms());
+    // exit(0);
 
     bool passed = true;
     LOG_LOG("Hello {}", "Diff");

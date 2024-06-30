@@ -1,1 +1,1 @@
-includes("disassmble", "logger")
+includes("disassmble", "logger", "timer")

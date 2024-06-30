@@ -29,6 +29,7 @@ target("diff")
     add_deps("logger")
     add_deps("nagicore")
     add_deps("disassmbler")
+    add_deps("timer")
     add_packages("fmt")
     add_options("GPERF_ENABLE")
     if(get_config("GPERF_ENABLE")) then
