@@ -72,12 +72,40 @@ std::string last_info(){
     return info;
 }
 
+uint64_t read_file_malloc(const char* filepath, uint8_t** bin){
+    std::ifstream file(filepath, std::ios::binary);
+    uint64_t file_size = std::filesystem::file_size(filepath);
+    *bin = new uint8_t[file_size];
+    file.read((char*)(*bin), file_size);
+    file.close();
+    return file_size;
+}
+
 // template<typename ADDR_T, typename DATA_T, uint8_t GPR_NUM>
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint64_t max_step = 0, bool show_matched_info = false){
     Timer timer_ref, timer_core, timer_tot;
     timer_tot.start();
     ref.init(image);
     core.init(image);
+
+    // // temp start
+    // uint8_t* test_bin = nullptr;
+    // const auto test_bin_size = read_file_malloc("/home/santiego/proj/arch/nscscc/work/nagi/prog/coremark/build/main.text.bin", &test_bin);
+    // ref.load_mem(0x1c000000, test_bin, test_bin_size);
+    // core.load_mem(0x1c000000, test_bin, test_bin_size);
+    // // delete [] test_bin;
+    // delete [] image.bin;
+    // image.bin = test_bin;
+
+    // uint8_t* data_bin = nullptr;
+    // const auto data_bin_size = read_file_malloc("/home/santiego/proj/arch/nscscc/work/nagi/prog/coremark/build/main.data.bin", &data_bin);
+    // ref.load_mem(0x1c00358c, data_bin, data_bin_size);
+    // core.load_mem(0x1c00358c, data_bin, data_bin_size);
+    // delete [] data_bin;
+    // // ref.load_mem(0x1c000000, uint8_t *data, unsigned long len)
+    // // temp end
+
+
     DATA_T pre_pc=0;
     uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
@@ -271,7 +299,7 @@ int main(){
         std::ifstream file(PROG_BIN_PATH, std::ios::binary);
         image_bin = new uint8_t [file_size];
         file.read((char*)image_bin, file_size);
-        image = {image_bin, file_size, 0x1c000000};
+        image = {image_bin, file_size, 0x80000000};
         difftest(NagiCore::get_instance(), cemu, image, 0, false);        
 #endif
     } catch (const DiffExcep& excep) {

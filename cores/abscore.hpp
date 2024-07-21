@@ -77,6 +77,7 @@ public:
     };
 
     virtual void init(image_t image)=0;
+    virtual void load_mem(addr_t addr, uint8_t* data, addr_t len)=0;
     virtual bool step(int step)=0;
     virtual word_t get_pc() const=0;
     virtual word_t get_gpr(uint8_t id) const=0;

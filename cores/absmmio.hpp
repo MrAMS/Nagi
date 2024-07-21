@@ -1,5 +1,6 @@
 #pragma once
 
+#include "logger.hpp"
 #include <cassert>
 #include <cstdint>
 #include <exception>
@@ -39,6 +40,7 @@ public:
     }
     virtual DATA_T read(ADDR_T addr, uint8_t size) = 0;
     virtual void write(ADDR_T addr, uint8_t mask, DATA_T wdata) = 0;
+    virtual void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) = 0;
 };
 
 
@@ -59,6 +61,7 @@ public:
         devices.push_back(dev_new);
     }
     DATA_T read(ADDR_T start_addr, uint8_t size) override{
+        // LOG_LOG("addr={:x} size={}", start_addr, size);
         for(auto& dev : devices){
             if(dev->addr_in(start_addr)){
                 return dev->read(start_addr, size);
@@ -79,6 +82,14 @@ public:
             fmt::format("absmmio_bus: write address {:x}({:x}) do not match any", start_addr, mask)
         );
     }
+    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        for(auto& dev : devices){
+            if(dev->addr_in(addr)){
+                dev->load_mem(addr, data, size);
+                return;
+            }
+        }
+    }
 private:
     std::vector<absdev<ADDR_T, DATA_T>*> devices;
     bool check_addr_overlap(const absdev<ADDR_T, DATA_T>* a, const absdev<ADDR_T, DATA_T>* b){
@@ -93,11 +104,14 @@ class dev_ram: public absdev<ADDR_T, DATA_T>{
 public:
     dev_ram(const std::string name, ADDR_T start_addr, ADDR_T size):absdev<ADDR_T, DATA_T>(name, start_addr, size){
         mem = std::make_unique<uint8_t[]>(size);
+        memset(mem.get(), 0, size); // FIXME
     }
     DATA_T read(ADDR_T addr, uint8_t size) override{
         addr -= this->start_addr;
         addr &= ~(ADDR_T)(sizeof(DATA_T)-1);
-        return *(DATA_T*)(mem.get() + addr);
+        const auto rdata = *(DATA_T*)(mem.get() + addr);
+        LOG_LOG("addr={:x} rdata={:x}", addr, rdata);
+        return rdata;
     }
     void write(ADDR_T addr, uint8_t mask, DATA_T wdata) override{
         addr -= this->start_addr;
@@ -111,12 +125,12 @@ public:
             addr++;
         }
     }
-    void load_mem(uint8_t* buffer, ADDR_T size){
+    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
         if(size>dev_ram::addr_size())
             throw absmmio_excep(
                 fmt::format("dev_ram: load mem too large {}>{}", size, dev_ram::addr_size())
             );
-        memcpy(mem.get(), buffer, size);
+        memcpy(mem.get()+addr-this->start_addr, data, size);
     }
 private:
     std::unique_ptr<uint8_t[]> mem;

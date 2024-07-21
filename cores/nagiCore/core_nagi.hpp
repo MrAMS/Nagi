@@ -28,7 +28,8 @@ public:
         top(new nagicore(verilated_contextp.get(), "nagicore")),
         tfp(new VerilatedFstC),
         rom("rom", rom_sart_addr, rom_size),
-        ram("ram", ram_sart_addr, ram_size)
+        ram("ram", ram_sart_addr, ram_size),
+        ram_base_ext("base_ext", rom_base_ext_sart_addr, 0x800000)
     {
         verilated_contextp->debug(0);
         // random all bits
@@ -42,6 +43,7 @@ public:
         bus_nagicore.add_device(&rom);
         bus_nagicore.add_device(&ram);
         bus_nagicore.add_device(&confreg);
+        bus_nagicore.add_device(&ram_base_ext);
     }
     ~NagiCore(){
         top->final();
@@ -51,7 +53,8 @@ public:
 #endif
     };
     void init(image_t image) override{
-        rom.load_mem(image.bin, image.size);
+        extern absbus<uint64_t, uint32_t> bus_nagicore;
+        bus_nagicore.load_mem(image.offset, image.bin, image.size);
         LOG_LOG("Nagi ready");
         top->clock = 0;
         for(int i=0;i<reset_cycles*2;++i){
@@ -66,6 +69,10 @@ public:
         }
         cycs_wave += reset_cycles;
         cycs_tot += reset_cycles;
+    }
+    void load_mem(uint64_t addr, uint8_t* data, uint64_t len) override{
+        extern absbus<uint64_t, uint32_t> bus_nagicore;
+        bus_nagicore.load_mem(addr, data, len);
     }
     bool step(int step) override{
         while(step--){
@@ -123,8 +130,10 @@ private:
 
     const uint32_t rom_sart_addr = 0x1c000000;
     const uint32_t ram_sart_addr = 0x00000000;
+    const uint32_t rom_base_ext_sart_addr = 0x80000000;
     const int reset_cycles = 10;
     dev_ram<uint64_t, uint32_t> rom;
     dev_ram<uint64_t, uint32_t> ram;
+    dev_ram<uint64_t, uint32_t> ram_base_ext;
     nscscc_conf<uint64_t> confreg;
 };

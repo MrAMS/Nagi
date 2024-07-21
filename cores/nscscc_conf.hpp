@@ -191,6 +191,12 @@ public:
                 );
         }
     }
+    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        throw absmmio_excep(
+            fmt::format("nscscc_conf: can't load_mem")
+        );
+        return;
+    }
 private:
     uint32_t cr[8];
     unsigned int switch_data;

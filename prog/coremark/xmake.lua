@@ -1,0 +1,13 @@
+option("CC_PREFIX")
+    set_default("11")
+    set_showmenu(true)
+    set_category("prog/coremark")
+    set_description("compiler prefix")
+
+target("coremark")
+    set_kind("phony")
+    add_options("CC_PREFIX")
+    on_build(function (target)
+        os.cd(target:scriptdir())
+        os.exec("make buildexp EXP=$(EXP_NUM)")
+    end)

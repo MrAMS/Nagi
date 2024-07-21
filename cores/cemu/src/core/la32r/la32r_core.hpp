@@ -22,7 +22,8 @@ public:
         idle = false;
         end = false;
         counter = 0;
-        pc = 0x1c000000u;
+        // pc = 0x1c000000u; // FIXME
+        pc = 0x80000000u;
         memset(GPR, 0, sizeof(GPR));
         mmu.reset();
         csr.reset();

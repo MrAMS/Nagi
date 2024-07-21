@@ -13,6 +13,7 @@ public:
     ram(uint64_t size_bytes) {
         mem = new unsigned char[size_bytes];
         mem_size = size_bytes;
+        memset(mem, 0, mem_size); // FIXME
     }
     ram(uint64_t size_bytes, const unsigned char *init_binary, uint64_t init_binary_len):ram(size_bytes) {
         load_mem(init_binary, init_binary_len);

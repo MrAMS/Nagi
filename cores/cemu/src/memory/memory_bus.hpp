@@ -9,6 +9,7 @@
 #include <utility>
 #include <climits>
 #include <queue>
+#include <cstdio>
 
 class memory_bus : public mmio_dev {
 public:
@@ -39,6 +40,7 @@ public:
         return true;
     }
     bool do_read(uint64_t start_addr, uint64_t size, unsigned char* buffer) {
+        // printf("cemu: addr=%lx, size=%ld\n", start_addr, size);
         auto it = devices.upper_bound(std::make_pair(start_addr,ULONG_MAX));
         if (it == devices.begin()) return false;
         it = std::prev(it);
