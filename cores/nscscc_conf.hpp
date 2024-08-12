@@ -1,5 +1,6 @@
 #pragma once
 #include "absmmio.hpp"
+#include <cassert>
 #include <cstdint>
 #include <queue>
 
@@ -191,11 +192,14 @@ public:
                 );
         }
     }
-    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+    void write_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
         throw absmmio_excep(
             fmt::format("nscscc_conf: can't load_mem")
         );
         return;
+    }
+    void read_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        assert(0);
     }
 private:
     uint32_t cr[8];

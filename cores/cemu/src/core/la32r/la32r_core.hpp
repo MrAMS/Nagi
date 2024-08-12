@@ -6,6 +6,7 @@
 #include "la32r_csr.hpp"
 
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <cassert>
 #include <queue>
@@ -255,7 +256,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 1, (uint8_t)temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 1, static_cast<int32_t>(temp), false));
                             set_GPR(instr._2ri12.rd, static_cast<int32_t>(temp));
                         }
                         break;
@@ -270,7 +271,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 2, (uint16_t)temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 2, static_cast<int32_t>(temp), false));
                             set_GPR(instr._2ri12.rd, static_cast<int32_t>(temp));
                         }
                         break;
@@ -285,7 +286,7 @@ private:
                         if (exc.first != OK) {
                             csr.raise_trap(exc, va);
                         } else {
-                            if(trace) traces.push(std::make_tuple(va, 4, (uint32_t)temp, false));
+                            if(trace) traces.push(std::make_tuple(va, 4, temp, false));
                             set_GPR(instr._2ri12.rd, temp);
                         }
                         break;
@@ -533,6 +534,7 @@ private:
     }
 
     void set_GPR(uint8_t index, uint32_t value) {
+        // printf("GPR %d = %08x\n", index, value);
         GPR[index] = value;
         if(trace&&index!=0) traces.push(std::make_tuple(index, 0, value, true));
         // if(index==14)

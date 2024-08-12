@@ -2,6 +2,7 @@
 #define LA32R_CSR
 
 #include "la32r_mmu.hpp"
+#include <cassert>
 
 template<int nr_tlb_entry = 32>
 class la32r_csr {

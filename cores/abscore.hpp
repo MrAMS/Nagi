@@ -12,29 +12,6 @@ typedef struct{
     uint64_t offset;
 } image_t;
 
-typedef struct{
-    uint64_t tot;
-    uint64_t hit;
-    uint64_t uncache;
-    uint64_t miss;
-} perf_cache_t;
-
-typedef struct{
-    uint64_t invalid;
-    uint64_t stall;
-} perf_pipe_t;
-
-typedef struct{
-    uint64_t cycles;
-    uint64_t valid_instrs;
-    uint64_t mem_st;
-    uint64_t mem_ld;
-    uint64_t br_tot;
-    uint64_t br_fail;
-    perf_cache_t cache[2];
-    perf_pipe_t pipe[10];
-} perf_t;
-
 
 template<class addr_t, class word_t, uint8_t GPR_NUM>
 class Core{
@@ -76,8 +53,9 @@ public:
         }
     };
 
-    virtual void init(image_t image)=0;
-    virtual void load_mem(addr_t addr, uint8_t* data, addr_t len)=0;
+    virtual void init()=0;
+    virtual void write_mem(addr_t addr, uint8_t* data, addr_t len)=0;
+    virtual void read_mem(addr_t addr, uint8_t* data, addr_t len)=0;
     virtual bool step(int step)=0;
     virtual word_t get_pc() const=0;
     virtual word_t get_gpr(uint8_t id) const=0;
@@ -85,7 +63,7 @@ public:
     // virtual bool check_trace_gpr(trace_gpr_t& trace)=0;
     // virtual bool check_trace_mem(trace_mem_t& trace)=0;
     virtual bool get_trace(trace_t& trace)=0;
-    virtual perf_t get_perf()=0;
+    virtual std::string get_perf()=0;
     uint64_t get_cycs_tot() const{
         return cycs_tot;
     }

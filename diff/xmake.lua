@@ -1,4 +1,5 @@
 add_requires("gperftools")
+add_rules("mode.asan")
 
 option("GPERF_ENABLE")
     set_default(false)

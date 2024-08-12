@@ -1,2 +1,5 @@
 ${define WAVE_LEN}
 ${define WAVE_ENABLE}
+${define WAVE_RECORE_MODE}
+${define WAVE_START_CYC}
+${define MTRACE_ENABLE}

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
+#include <ios>
 #include "core_nagi.hpp"
 #include "logger.hpp"
 #include "ringbuf.hpp"
@@ -19,9 +20,20 @@ RingBuf<NagiCore::trace_t, 8> nagi_traces;
 
 perf_t nagi_perf;
 
+#if MTRACE_ENABLE
+std::fstream nagi_mtrace_file;
+void nagi_mtrace_init(){
+    nagi_mtrace_file.open("./mtrace.csv", std::ios::out);
+}
+void nagi_mtrace_close(){
+    nagi_mtrace_file.close();
+}
+#endif
+
 void dpic_trace_mem(uint32_t addr, uint8_t size, uint32_t data, uint8_t wmask){
     uint8_t size_real = 1<<size;
     if(wmask==0){
+        // LOG_LOG("addr {:x} rdata={:x}", addr, data);
         nagi_traces.push({addr, size_real, data, false});
         nagi_perf.mem_ld++;
     }else{
@@ -33,30 +45,23 @@ void dpic_trace_mem(uint32_t addr, uint8_t size, uint32_t data, uint8_t wmask){
             ptr++;
             data >>= 8;
         }
+        // LOG_LOG("addr {:x} wdata={:x}", addr, wdata);
         nagi_traces.push({addr, size_real, wdata, true});
         nagi_perf.mem_st++;
     }
+// #if MTRACE_ENABLE
+//     const auto log = fmt::format("w addr={:x} size={} wdata={:x}\n", addr, size, data);
+//     nagi_mtrace_file.write(log.c_str(), log.size());
+// #endif
 }
 
 void dpic_bus_read(uint32_t addr, uint8_t size, uint32_t* rdata){
-    // try{
-        *rdata = bus_nagicore.read(addr, 1<<size);
-    // }catch(const std::exception &e){
-        // LOG_ERRO("BUS READ {}", e.what());
-    // }
-    // traces_mem.push({addr, size, *rdata, false});
-    // printf("%x\n", addr);
-    // LOG_LOG("dpic read {:x}({})={:x}", addr, size, *rdata);
-    // if(trace!=0){
-    //     uint32_t t=0;
-    //     memcpy(&t, (uint8_t*)rdata+(addr&(sizeof(uint32_t)-1)), size);
-    //     nagi_traces.push({addr, size, t, false});
-    // }
+    *rdata = bus_nagicore.read(addr, 1<<size);
+#if MTRACE_ENABLE
+    const auto log = fmt::format("0,{:x},{},{:x}\n", addr, size, *rdata);
+    nagi_mtrace_file.write(log.c_str(), log.size());
+#endif
 }
-
-// void dpic_fetch_instr(uint32_t pc, uint8_t size, uint32_t* rdata){
-//     bus_nagicore.read(pc, 4, (uint8_t*)rdata);
-// }
 
 void dpic_bus_write(uint32_t addr, uint8_t wmask, const uint32_t wdata){
     // uint8_t sz=4;
@@ -91,6 +96,12 @@ void dpic_bus_write(uint32_t addr, uint8_t wmask, const uint32_t wdata){
     //     default: assert(0);
     // }
     bus_nagicore.write(addr, wmask, wdata);
+#if defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH
+    if(addr==0xbfd00000+0x3f8&&(char)wdata==6){
+        LOG_LOG("reset perf");
+        memset(&nagi_perf, 0, sizeof(nagi_perf));
+    }
+#endif
     // if(trace!=0){
     //     uint32_t wdata_real=0;
     //     memcpy((uint8_t*)&wdata_real, (uint8_t*)&wdata+offset, sz);
@@ -140,6 +151,9 @@ void dpic_perf_cache(uint8_t id, uint8_t access_type){
         case 2:
             nagi_perf.cache[id].uncache++;
             break;
+        case 3:
+            nagi_perf.cache[id].uncache++;
+            break;
         default:
             assert(0);
     }
@@ -153,4 +167,12 @@ void dpic_perf_bru(uint8_t fail){
 void dpic_perf_pipe(uint8_t id, uint8_t invalid, uint8_t stall){
     nagi_perf.pipe[id].invalid += invalid;
     nagi_perf.pipe[id].stall += stall;
+}
+
+void dpic_update_instrs_buff(uint8_t id, uint8_t head, uint8_t tail, uint8_t full, uint8_t reload){
+    const int len = 8;
+    nagi_perf.buffs[id].cycs += 1;
+    nagi_perf.buffs[id].len_sum += ((int)tail+len-(int)head)%len;
+    nagi_perf.buffs[id].full += full;
+    nagi_perf.buffs[id].reload += reload;
 }

@@ -3,12 +3,14 @@
 #include "logger.hpp"
 #include <cassert>
 #include <cstdint>
+#include <cstdio>
 #include <exception>
 #include <memory>
 #include <string>
 #include <sys/types.h>
 #include <vector>
 #include <fmt/core.h>
+#include "config_prog.h"
 
 class absmmio_excep : public std::exception
 {
@@ -40,7 +42,8 @@ public:
     }
     virtual DATA_T read(ADDR_T addr, uint8_t size) = 0;
     virtual void write(ADDR_T addr, uint8_t mask, DATA_T wdata) = 0;
-    virtual void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) = 0;
+    virtual void write_buff(ADDR_T addr, uint8_t* data, ADDR_T size) = 0;
+    virtual void read_buff(ADDR_T addr, uint8_t* data, ADDR_T size) = 0;
 };
 
 
@@ -82,13 +85,27 @@ public:
             fmt::format("absmmio_bus: write address {:x}({:x}) do not match any", start_addr, mask)
         );
     }
-    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+    void write_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
         for(auto& dev : devices){
             if(dev->addr_in(addr)){
-                dev->load_mem(addr, data, size);
+                dev->write_buff(addr, data, size);
                 return;
             }
         }
+        throw absmmio_excep(
+            fmt::format("absmmio_bus: write buff address {:x} do not match any", addr)
+        );
+    }
+    void read_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        for(auto& dev : devices){
+            if(dev->addr_in(addr)){
+                dev->read_buff(addr, data, size);
+                return;
+            }
+        }
+        throw absmmio_excep(
+            fmt::format("absmmio_bus: read buff address {:x} do not match any", addr)
+        );
     }
 private:
     std::vector<absdev<ADDR_T, DATA_T>*> devices;
@@ -110,7 +127,7 @@ public:
         addr -= this->start_addr;
         addr &= ~(ADDR_T)(sizeof(DATA_T)-1);
         const auto rdata = *(DATA_T*)(mem.get() + addr);
-        LOG_LOG("addr={:x} rdata={:x}", addr, rdata);
+        // LOG_LOG("r addr={:x} rdata={:x}", addr, rdata);
         return rdata;
     }
     void write(ADDR_T addr, uint8_t mask, DATA_T wdata) override{
@@ -124,14 +141,95 @@ public:
             wdata >>= 8;
             addr++;
         }
+        // LOG_LOG("w addr={:x} wdata={:x}", addr, wdata);
     }
-    void load_mem(ADDR_T addr, uint8_t* data, ADDR_T size) override{
-        if(size>dev_ram::addr_size())
+    void write_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        const auto offset = addr-this->start_addr;
+        if(offset+size>dev_ram::addr_size())
             throw absmmio_excep(
-                fmt::format("dev_ram: load mem too large {}>{}", size, dev_ram::addr_size())
+                fmt::format("dev_ram: write buff too large")
             );
-        memcpy(mem.get()+addr-this->start_addr, data, size);
+        memcpy(mem.get()+offset, data, size);
+    }
+    void read_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        const auto offset = addr-this->start_addr;
+        if(offset+size>dev_ram::addr_size())
+            throw absmmio_excep(
+                fmt::format("dev_ram: read buff too large")
+            );
+        memcpy(data, mem.get()+offset, size);
     }
 private:
     std::unique_ptr<uint8_t[]> mem;
+};
+
+
+template<typename ADDR_T, typename DATA_T>
+class dev_uart: public absdev<ADDR_T, DATA_T>{
+public:
+    dev_uart(const std::string name, ADDR_T start_addr, ADDR_T size):absdev<ADDR_T, DATA_T>(name, start_addr, size){
+        cnt = 0;
+    }
+    DATA_T read(ADDR_T addr, uint8_t size) override{
+        addr -= this->start_addr;
+        addr &= ~(ADDR_T)(sizeof(DATA_T)-1);
+        // LOG_LOG("UART R addr={:x} size={:x}", addr, size);
+        DATA_T rdata=0;
+        switch(addr) {
+            case 0x3fc:
+                rdata = 3;
+                break;
+            case 0x3f8:
+#if defined PROG_LAB2
+                rdata = 'T';
+#elif defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH
+                switch (cnt) {
+                    case 0: {
+                        rdata = 'G';
+                        break;
+                    }
+                    // put 0x80100000
+                    case 1:{
+                        rdata = 0x00;
+                        break;
+                    }
+                    case 2:{
+                        rdata = 0x00;
+                        break;
+                    }
+                    case 3:{
+                        rdata = 0x10;
+                        break;
+                    }
+                    case 4:{
+                        rdata = 0x80;
+                        break;
+                    }
+                    // case 5:{
+                    //     rdata = 0x50;
+                    //     break;
+                    // }
+                }
+                cnt++;
+                // printf("cnt=%d\n", cnt);
+#endif
+                break;
+            default:
+                assert(0);
+        }
+        return rdata;
+    }
+    void write(ADDR_T addr, uint8_t mask, DATA_T wdata) override{
+        addr -= this->start_addr;
+        addr &= ~(ADDR_T)(sizeof(DATA_T)-1);
+        // LOG_LOG("UART W addr={:x} wdata={}({:x})", addr, (char)wdata, wdata);
+    }
+    void write_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        assert(0);
+    }
+    void read_buff(ADDR_T addr, uint8_t* data, ADDR_T size) override{
+        assert(0);
+    }
+private:
+    int cnt;
 };

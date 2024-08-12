@@ -1,1 +1,13 @@
 ${define PROG_BIN_PATH}
+${define PROG_BIN_ADDR}
+${define PROG_NAME}
+
+// Lab2
+${define PROG_LAB2}
+
+
+// CRYPTONIGHT
+${define PROG_CRYPTONIGHT_BIN_PATH}
+
+// MATRIX
+${define PROG_MATRIX_BIN_PATH}

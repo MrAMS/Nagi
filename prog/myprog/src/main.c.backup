@@ -1,0 +1,6 @@
+int main(void){
+    int a = *((unsigned int*)(0xbfd00000));
+    while(a==233){};
+    while(1){};
+    return 0;
+}

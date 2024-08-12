@@ -85,8 +85,54 @@ uint64_t read_file_malloc(const char* filepath, uint8_t** bin){
 void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>& ref, image_t image, uint64_t max_step = 0, bool show_matched_info = false){
     Timer timer_ref, timer_core, timer_tot;
     timer_tot.start();
-    ref.init(image);
-    core.init(image);
+
+
+    uint8_t* bin_ptr = nullptr;
+    uint64_t bin_size=0;
+
+    ref.init();
+    core.init();
+
+    bin_size = read_file_malloc(PROG_BIN_PATH, &bin_ptr);
+    core.write_mem(PROG_BIN_ADDR, bin_ptr, bin_size);
+    ref.write_mem(PROG_BIN_ADDR, bin_ptr, bin_size);
+    // uint32_t t=0;
+    // ref.read_mem(0x80002048, (uint8_t*)&t, 4);
+    // LOG_LOG("(0x80002048)={:x}", t);
+    // LOG_LOG("(0x80002048)={:x}", *(uint32_t*)(bin_ptr+0x2048));
+    delete [] bin_ptr;
+
+    #ifdef PROG_CRYPTONIGHT_BIN_PATH
+    bin_size = read_file_malloc(PROG_BIN_PATH, &bin_ptr);
+    core.write_mem(0x80100000, bin_ptr+0x30b4, 0x94);
+    ref.write_mem(0x80100000, bin_ptr+0x30b4, 0x94);
+    // for(int i=0;i<0x94;i+=4){
+    //     uint32_t t=0;
+    //     ref.read_mem(0x80100000+i, (uint8_t*)&t, 4);
+    //     printf("%x", t);
+    // }
+    // puts("");
+    // for(int i=0;i<0x94;i+=4){
+    //     uint32_t t=*(uint32_t*)(bin_ptr+0x30b0+i);
+    //     printf("%x", t);
+    // }
+    // puts("");
+    delete [] bin_ptr;
+    // bin_size = read_file_malloc(PROG_CRYPTONIGHT_BIN_PATH, &bin_ptr);
+    // core.write_mem(PROG_CRYPTONIGHT_ADDR, bin_ptr, bin_size);
+    // ref.write_mem(PROG_CRYPTONIGHT_ADDR, bin_ptr, bin_size);
+    // delete [] bin_ptr;
+    #elif defined PROG_MATRIX_BIN_PATH
+    bin_size = read_file_malloc(PROG_BIN_PATH, &bin_ptr);
+    core.write_mem(0x80100000, bin_ptr+0x3030, 0x84);
+    ref.write_mem(0x80100000, bin_ptr+0x3030, 0x84);
+    delete [] bin_ptr;
+    bin_size = read_file_malloc(PROG_MATRIX_BIN_PATH, &bin_ptr);
+    core.write_mem(0x80400000, bin_ptr, 0x30000);
+    ref.write_mem(0x80400000, bin_ptr, 0x30000);
+    delete [] bin_ptr;
+    
+    #endif
 
     // // temp start
     // uint8_t* test_bin = nullptr;
@@ -110,6 +156,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
+    RingBuf<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t, 4> traces_history;
     for(uint64_t i = 1; i <= max_step || max_step == 0; i++){
         if(show_matched_info) LOG_INFO("step {}", i);
         timer_core.start();
@@ -120,12 +167,46 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
             pc_repeated_cnt = 0;
             pre_pc = pc;
             pc_log.push(pc);
+            uint32_t instr=0;
+            core.read_mem(pc, (uint8_t*)&instr, 4);
+            if(instr==0) THROE_DIFF_EXCEPT("instr is 0");
             // printf("pc %x\n", pc);
         }else{
             pc_repeated_cnt += 1;
-            if(pc_repeated_cnt > 1000)
+            if(pc_repeated_cnt > 1000){
                 THROE_DIFF_EXCEPT("pc repeated more than {} steps", pc_repeated_cnt);
+            }
         }
+
+        // if(timer_tot.get_ms() > 10*1000){
+        //     std::string last_instrs = "Last instructions:\n";
+        //     DATA_T pc_t=0;
+        //     while(pc_log.pop(pc_t)){
+        //         DATA_T instr=0;
+        //         core.read_mem(pc_t, (uint8_t*)&instr, 4);
+        //         const auto res = disassmble_instrs(disassmble_target_t::la32r,
+        //             (uint8_t*)&instr, 
+        //             4, pc_t
+        //         );
+        //         last_instrs += res[0] + "\n";
+        //     }
+        //     last_instrs += "--> \n";
+        //     pc_t += 4;
+        //     for(int i=0;i<3;pc_t+=4,++i){
+        //         try{
+        //             DATA_T instr=0;
+        //             core.read_mem(pc_t, (uint8_t*)&instr, 4);
+        //             const auto res = disassmble_instrs(disassmble_target_t::la32r,
+        //                 (uint8_t*)&instr, 
+        //                 4, pc_t
+        //             );
+        //             last_instrs += res[0] + "\n";
+        //         }catch(const absmmio_excep& excp){
+        //             break;
+        //         }
+        //     }
+        //     THROE_DIFF_EXCEPT("Timeout\n{}\n", last_instrs);
+        // }
 
         typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_t;
         while(core.get_trace(trace_t)){
@@ -138,6 +219,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                     for(auto iter_core=traces_core.begin();iter_core!=traces_core.end();++iter_core){
                         if(*iter_ref == *iter_core){
                             if(show_matched_info) printf("matched: %s\n", iter_ref->str().c_str());
+                            traces_history.push(*iter_core);
                             iter_core = traces_core.erase(iter_core);
                             iter_ref = traces_ref.erase(iter_ref);
                             break;
@@ -146,6 +228,10 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 }
                 if(traces_core.size()==0) break;
                 else if(traces_ref.size()!=0){
+                    std::string trace_history = "";
+                    while(traces_history.pop(trace_t)){
+                        trace_history += trace_t.str() + "; ";
+                    }
                     std::string trace_str_core = "";
                     for(auto iter=traces_core.begin();iter!=traces_core.end();iter++){
                         trace_str_core += iter->str() + "; ";
@@ -154,7 +240,33 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                     for(auto iter=traces_ref.begin();iter!=traces_ref.end();iter++){
                         trace_str_ref += iter->str() + "; ";
                     }
-                    THROE_DIFF_EXCEPT("trace mismatch\nref expect:  {}\ncore return: {}\n", trace_str_ref, trace_str_core);
+                    std::string last_instrs = "Last instructions:\n";
+                    DATA_T pc_t=0;
+                    while(pc_log.pop(pc_t)){
+                        DATA_T instr=0;
+                        core.read_mem(pc_t, (uint8_t*)&instr, 4);
+                        const auto res = disassmble_instrs(disassmble_target_t::la32r,
+                            (uint8_t*)&instr, 
+                            4, pc_t
+                        );
+                        last_instrs += res[0] + "\n";
+                    }
+                    last_instrs += "--> \n";
+                    pc_t += 4;
+                    for(int i=0;i<3;pc_t+=4,++i){
+                        try{
+                            DATA_T instr=0;
+                            core.read_mem(pc_t, (uint8_t*)&instr, 4);
+                            const auto res = disassmble_instrs(disassmble_target_t::la32r,
+                                (uint8_t*)&instr, 
+                                4, pc_t
+                            );
+                            last_instrs += res[0] + "\n";
+                        }catch(const absmmio_excep& excp){
+                            break;
+                        }
+                    }
+                    THROE_DIFF_EXCEPT("trace mismatch\nlast matched: {}\nref expect:  {}\ncore return: {}\n{}", trace_history, trace_str_ref, trace_str_core, last_instrs);
                 }
                 // traces_core.size()!=0 && traces_ref.size()==0 reach here
             }
@@ -168,44 +280,12 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                 }
                 LOG_INFO("ref already exit\ncore return: {}", trace_str_core);
                 const auto perf = core.get_perf();
+                LOG_INFO("Program: {} {} {}", PROG_NAME, __TIME__, __DATE__);
                 LOG_INFO("Run Time\n"
-                "TOT={}ms DUT={}ms REF={}ms\n",
-                timer_tot.get_ms(), timer_core.get_ms(), timer_ref.get_ms()
+                    "TOT={}ms DUT={}ms REF={}ms",
+                    timer_tot.get_ms(), timer_core.get_ms(), timer_ref.get_ms()
                 );
-                LOG_INFO("Performance\n"
-                "Instr:\n"
-                " instrs={} IPC={} valid={} cycs={}\n"
-                "BRU:\n"
-                " success={:.1f}% tot={} fail={}\n"
-                "Mem:\n"
-                " tot={} ld={} st={}\n"
-                " I$ hit rate={:.1f}% tot={}\n"
-                " D$ hit rate={:.1f}% tot={} uncache={}\n"
-                "Pipeline:\n"
-                " invalid I$={}({} {:.1f}%) EX={}({} {:.1f}%) D$={}({} {:.1f}%)\n"
-                " stall   I$={}({} {:.1f}%) EX={}({} {:.1f}%) D$={}({} {:.1f}%)\n"
-                ,
-                    ref.get_perf().valid_instrs,
-                    perf.valid_instrs*1.0f/perf.cycles, perf.valid_instrs, perf.cycles,
-
-                    (perf.br_tot-perf.br_fail)*100.0/perf.br_tot, perf.br_tot, perf.br_fail,
-                    
-                    perf.mem_ld+perf.mem_st, perf.mem_ld, perf.mem_st, 
-                    perf.cache[0].hit*100.0f/(perf.cache[0].hit+perf.cache[0].miss), perf.cache[0].tot,
-                    perf.cache[1].hit*100.0f/(perf.cache[1].hit+perf.cache[1].miss), perf.cache[1].tot, perf.cache[1].uncache,
-                    
-                    // perf.pipe[0].invalid, perf.pipe[1].invalid, perf.pipe[2].invalid,
-                    // perf.pipe[0].stall, perf.pipe[1].stall, perf.pipe[2].stall
-                    perf.pipe[0].invalid,   perf.pipe[0].invalid,                       perf.pipe[0].invalid*100.0f/perf.cycles,
-                    perf.pipe[1].invalid,   perf.pipe[1].invalid-perf.pipe[0].invalid,  (perf.pipe[1].invalid-perf.pipe[0].invalid)*100.0f/perf.cycles,
-                    perf.pipe[2].invalid,   perf.pipe[2].invalid-perf.pipe[1].invalid,  (perf.pipe[2].invalid-perf.pipe[1].invalid)*100.0f/perf.cycles,
-
-                    perf.pipe[0].stall,     perf.pipe[0].stall-perf.pipe[1].stall,      (perf.pipe[0].stall-perf.pipe[1].stall)*100.0f/perf.cycles,
-                    perf.pipe[1].stall,     perf.pipe[1].stall-perf.pipe[2].stall,      (perf.pipe[1].stall-perf.pipe[2].stall)*100.0f/perf.cycles,
-                    perf.pipe[2].stall,     perf.pipe[2].stall,                         perf.pipe[2].stall*100.0f/perf.cycles
-
-                );
-                
+                LOG_INFO("{}", core.get_perf());
                 return;
             }
             while(ref.get_trace(trace_t)){
@@ -214,6 +294,7 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
                     if(*iter == trace_t){
                         matched = true;
                         if(show_matched_info) printf("matched: %s\n", trace_t.str().c_str());
+                        traces_history.push(*iter);
                         traces_core.erase(iter);
                         break;
                     }
@@ -311,13 +392,14 @@ int main(){
     }
     if(passed)
         LOG_INFO("PASS DIFFTEST");
-    else{
-        LOG_ERRO("{}", last_info());
-    }
+    // else{
+    //     LOG_ERRO("{}", last_info());
+    // }
     if(image_bin!=nullptr)
         delete [] image_bin;
 #if GPERF_ENABLE
     ProfilerStop();
 #endif
+    system("notify-send 'Difftest Finished.'");
     return 0;
 }
