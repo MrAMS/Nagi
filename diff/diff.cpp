@@ -131,7 +131,14 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     core.write_mem(0x80400000, bin_ptr, 0x30000);
     ref.write_mem(0x80400000, bin_ptr, 0x30000);
     delete [] bin_ptr;
-    
+    #elif defined PROG_FINAL_BIN_PATH
+    bin_size = read_file_malloc(PROG_FINAL_BIN_PATH, &bin_ptr);
+    core.write_mem(0x80100000, bin_ptr, bin_size);
+    ref.write_mem(0x80100000, bin_ptr, bin_size);
+    int array[] = {233, 555, 4, 12, 88};
+    core.write_mem(0x80400000, (uint8_t*)&array, sizeof(array));
+    ref.write_mem(0x80400000, (uint8_t*)&array, sizeof(array));
+    delete [] bin_ptr;
     #endif
 
     // // temp start
@@ -152,7 +159,6 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
     // // temp end
 
 
-    DATA_T pre_pc=0;
     uint32_t pc_repeated_cnt=0;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_core;
     std::list<typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t> traces_ref;
@@ -162,20 +168,10 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
         timer_core.start();
         if(!core.step(1)) break;
         timer_core.stop();
-        const DATA_T pc = core.get_pc();
-        if(pre_pc!=pc){
-            pc_repeated_cnt = 0;
-            pre_pc = pc;
-            pc_log.push(pc);
-            uint32_t instr=0;
-            core.read_mem(pc, (uint8_t*)&instr, 4);
-            if(instr==0) THROE_DIFF_EXCEPT("instr is 0");
-            // printf("pc %x\n", pc);
-        }else{
-            pc_repeated_cnt += 1;
-            if(pc_repeated_cnt > 1000){
-                THROE_DIFF_EXCEPT("pc repeated more than {} steps", pc_repeated_cnt);
-            }
+
+        pc_repeated_cnt += 1;
+        if(pc_repeated_cnt > 1000){
+            THROE_DIFF_EXCEPT("pc repeated more than {} steps", pc_repeated_cnt);
         }
 
         // if(timer_tot.get_ms() > 10*1000){
@@ -211,6 +207,15 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
         typename Core<ADDR_T, DATA_T, GPR_NUM>::trace_t trace_t;
         while(core.get_trace(trace_t)){
             traces_core.push_back(trace_t);
+            if(trace_t.ispc()){
+                const DATA_T pc = trace_t.addr;
+                pc_repeated_cnt = 0;
+                pc_log.push(pc);
+                uint32_t instr=0;
+                core.read_mem(pc, (uint8_t*)&instr, 4);
+                if(instr==0) THROE_DIFF_EXCEPT("instr is 0");
+                // printf("pc %x\n", pc);
+            }
         }
         while(traces_core.size()!=0){
             // if has any unmatched trace, try to match first
@@ -274,6 +279,18 @@ void difftest(Core<ADDR_T, DATA_T, GPR_NUM>& core, Core<ADDR_T, DATA_T, GPR_NUM>
             const bool ref_running = ref.step(1);
             timer_ref.stop();
             if(!ref_running){
+#if defined PROG_FINAL_BIN_PATH
+                // const auto ptf_size = 20;
+                // const auto p_extmem = new uint8_t[ptf_size];
+                // core.read_mem(0x80400000, p_extmem, ptf_size);
+                // for(int i=0;i<ptf_size;++i)
+                //     printf("%x ", p_extmem[i]);
+                // printf("\n");
+                // delete [] p_extmem;
+                int mx=0;
+                core.read_mem(0x80700000, (uint8_t*)&mx, 4);
+                printf("mx=%d\n", mx);
+#endif
                 std::string trace_str_core = "";
                 for(auto iter=traces_core.begin();iter!=traces_core.end();iter++){
                     trace_str_core += iter->str() + "; ";

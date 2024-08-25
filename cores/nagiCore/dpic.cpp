@@ -126,12 +126,33 @@ void dpic_update_pc(uint32_t value){
     // LOG_INFO("update pc={:x}", value);
     if(pc_pre != value){
         nagi_perf.valid_instrs += 1;
-    }
-    if(pc_pre+4!=value){
         nagi_traces.push({value, 0, 0, true});
     }
+    // if(pc_pre+4!=value){
+    //     nagi_traces.push({value, 0, 0, true});
+    // }
     pc_pre = value;
     pc_nagicore = value;
+}
+
+void dpic_update_pc2(uint32_t pc1, uint8_t valid1, uint32_t pc2, uint8_t valid2){
+    // LOG_INFO("update pc={:x}", value);
+    if(valid1){
+        if(pc_pre != pc1){
+            nagi_perf.valid_instrs += 1;
+            nagi_traces.push({pc1, 0, 0, true});
+        }
+        pc_pre = pc1;
+        pc_nagicore = pc1;
+    }
+    if(valid2){
+        if(pc_pre != pc2){
+            nagi_perf.valid_instrs += 1;
+            nagi_traces.push({pc2, 0, 0, true});
+        }
+        pc_pre = pc2;
+        pc_nagicore = pc2;
+    }
 }
 
 /**

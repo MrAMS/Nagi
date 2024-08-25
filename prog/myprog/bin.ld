@@ -1,33 +1,27 @@
 OUTPUT_ARCH(loongarch)
 ENTRY(_start)
-/* PHDRS { text PT_LOAD; data PT_LOAD; } */
-/* MEMORY {
-  ram : ORIGIN = 0x30000000, LENGTH = 0x10000000
-  rom : ORIGIN = 0x1c000000, LENGTH = 0x100000
-} */
 
 SECTIONS
 {
   . = 0x80000000;
   .text :
   {
-    _start = . ;
-	  kernel_entry = . ;
+    *(entry)
+    _stext = . ;
     *(.text*)
+    *(.text*)
+    _srodata = ALIGN(4);
     *(.rodata*)
-    *(.reginfo)
-    *(.init)
-    *(.stub)
-
-    *(.gnu.warning)
-    rodata_end = .;
+    _erodata = ALIGN(4);
+    _etext = ALIGN(4);
   }
-  . = ALIGN(4);
-  .data : {
-    *(.data)
-  }
-  . = ALIGN(4);
+  . = 0x807F0000;
+  _ssp = .;
   .bss : {
-    *(.bss)
+      _sbss = .;         /* define a global symbol at bss start */
+      *(.bss)
+      . = ALIGN(4);
+      _ebss = .;         /* define a global symbol at bss end */
   }
+
 }

@@ -1,0 +1,38 @@
+80000000 <_start>:
+80000000:       1c00fe03        pcaddu12i       $r3,2032(0x7f0)
+80000004:       02800063        addi.w  $r3,$r3,0
+80000008:       1c00fe0c        pcaddu12i       $r12,2032(0x7f0)
+8000000c:       02bfe18c        addi.w  $r12,$r12,-8(0xff8)
+80000010:       1c00fe0d        pcaddu12i       $r13,2032(0x7f0)
+80000014:       02bfc1ad        addi.w  $r13,$r13,-16(0xff0)
+
+80000018 <bss_init>:
+beq     $r12,$r13,28(0x1c) # 80000034 <main>
+st.w    $r0,$r12,0
+addi.w  $r12,$r12,4(0x4)
+b       -12(0xffffff4) # 80000018 <bss_init>
+0x807f0000
+0x807f0000
+0x807f0000
+
+addi.w  $r3,$r3,-32(0xfe0)
+st.w    $r22,$r3,28(0x1c)
+addi.w  $r22,$r3,32(0x20)
+st.w    $r0,$r22,-20(0xfec)
+st.w    $r0,$r22,-24(0xfe8)
+b       32(0x20) # 80000068 <main+0x34>
+ld.w    $r13,$r22,-20(0xfec)
+ld.w    $r12,$r22,-24(0xfe8)
+add.w   $r12,$r13,$r12
+st.w    $r12,$r22,-20(0xfec)
+ld.w    $r12,$r22,-24(0xfe8)
+addi.w  $r12,$r12,1(0x1)
+st.w    $r12,$r22,-24(0xfe8)
+ld.w    $r13,$r22,-24(0xfe8)
+addi.w  $r12,$r0,9(0x9)
+bge     $r12,$r13,-36(0x3ffdc) # 8000004c <main+0x18>
+move    $r12,$r0
+move    $r4,$r12
+ld.w    $r22,$r3,28(0x1c)
+addi.w  $r3,$r3,32(0x20)
+jirl    $r0,$r1,0

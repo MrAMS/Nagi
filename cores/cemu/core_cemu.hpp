@@ -9,6 +9,7 @@
 #include "cemu/src/device/nscscc_confreg.hpp"
 #include "src/memory/memory_bus.hpp"
 #include "src/memory/ram.hpp"
+#include "src/memory/mia.hpp"
 #include "src/core/la32r/la32r_core.hpp"
 #include <cstring>
 #include <queue>
@@ -21,6 +22,7 @@ public:
         data_mem(0x100000),
         base_mem(0x800000),
         ext_mem(0x400000),
+        my_mia(),
         confreg(true),
         core(0, mmio, true)
     {
@@ -29,6 +31,7 @@ public:
         assert(mmio.add_dev(0x80000000,0x800000, {&base_mem, false, true}));
         assert(mmio.add_dev(0xbfaf0000, 0x10000, {&confreg, false, false}));
         assert(mmio.add_dev(0xbfd00000, 0x10000, {&uart, false, false}));
+        assert(mmio.add_dev(0x90000000, 0x10000, {&my_mia, false, false}));
 
     }
     void init() override{
@@ -48,7 +51,7 @@ public:
             cycs_tot += 1;
             core.step();
             confreg.tick();
-#if defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH
+#if defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH || defined PROG_FINAL_BIN_PATH
             if(uart.get_output()==7) program_end = true;
 #endif
             // printf("cemu: pc=%x\n", core.get_pc());
@@ -94,6 +97,7 @@ private:
     ram base_mem;
     ram ext_mem;
     my_uart uart;
+    mia my_mia;
     nscscc_confreg confreg;
     la32r_core<32> core;
     uint32_t test_point = 0;

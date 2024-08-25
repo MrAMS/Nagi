@@ -11,3 +11,6 @@ ${define PROG_CRYPTONIGHT_BIN_PATH}
 
 // MATRIX
 ${define PROG_MATRIX_BIN_PATH}
+
+// final
+${define PROG_FINAL_BIN_PATH}

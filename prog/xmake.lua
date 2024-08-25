@@ -2,7 +2,7 @@ option("PROG")
     set_default("la32r_func")
     set_showmenu(true)
     set_category("prog")
-    set_values("la32r_func", "lab1", "lab2", "perf_CRYPTONIGHT", "perf_MATRIX", "myprog", "NONE")
+    set_values("la32r_func", "lab1", "lab2", "perf_CRYPTONIGHT", "perf_MATRIX", "final", "myprog", "NONE")
 
 target("prog")
     set_kind("phony")
@@ -29,6 +29,10 @@ target("prog")
         set_configvar("PROG_BIN_ADDR", "0x80000000", {quote = false})
         set_configvar("PROG_BIN_PATH", "$(scriptdir)/prog/perf/kernel.bin")
         set_configvar("PROG_MATRIX_BIN_PATH", "$(scriptdir)/prog/perf/matrix.bin")
+    elseif prog == "final" then
+        set_configvar("PROG_BIN_ADDR", "0x80000000", {quote = false})
+        set_configvar("PROG_BIN_PATH", "$(scriptdir)/prog/perf/kernel.bin")
+        set_configvar("PROG_FINAL_BIN_PATH", "$(scriptdir)/prog/final/build/final.bin")
     end
     
     add_configfiles("config_prog.h.in")

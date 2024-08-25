@@ -74,11 +74,11 @@ private:
         while (pc_trace.size() > 16) {
             pc_trace.pop();
         }
-        static uint32_t pc_pre = 0;
-        if(pc != pc_pre+4){
+        // static uint32_t pc_pre = 0;
+        // if(pc != pc_pre+4){
             if(trace) traces.push(std::make_tuple(pc, 0, 0, true));
-        }
-        pc_pre = pc;
+        // }
+        // pc_pre = pc;
         csr.pre_exec(exc_int);
         if (csr.need_trap()) {
             idle = false;

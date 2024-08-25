@@ -33,36 +33,24 @@
 # define s7	$r30
 # define s8	$r31
 
+.section entry, "ax"
+.global	main
 .globl _start
 _start:
-    lu12i.w $r3, 0x807F
-    ori $r3, $r3, 0xFF0
-WRITESERIAL:
-    lu12i.w     s0,-0x40300    # s0 = 0xbfd00000
-    la.local    s1,info
-    ld.b        a0,s1,0x0
-loop1:
-    addi.w      s1,s1,0x1
-.TESTW:
-    ld.b        t0,s0,0x3fc
-    andi        t0,t0,0x001
-    beq         t0,zero,.TESTW
-    st.b        a0,s0,0x3F8
-    ld.b        a0,s1,0x0
-    bne         a0,zero,loop1
-
-READSERIAL:
-    # lui         s0,-0x40300
-.TESTR:
-    ld.b        t0,s0,0x3fc
-    andi        t0,t0,0x002
-    beq         t0,zero,.TESTR
-    ld.b        a0,s0,0x3F8
-    addi.w      t0,zero,0x54  # char 'T'
-    bne         a0,t0,READSERIAL
-
-
-    b 0
-
-info:
-    .asciz "Fib Finish."
+# 设置栈指针
+    la.local sp, _ssp
+    # lu12i.w sp, 0x807F
+    # ori $r3, sp, 0xFF0
+# 初始化BSS
+    la.local    t0,_sbss
+    la.local    t1,_ebss
+bss_init:
+    beq         t0,t1,main
+    st.w        zero,t0,0x0
+    addi.w      t0,t0,0x4
+    b           bss_init
+/* start address for the .bss section. defined in linker script */
+.word   _sbss
+/* end address for the .bss section. defined in linker script */
+.word   _ebss
+.word   _ssp

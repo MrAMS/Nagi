@@ -4,3 +4,4 @@
 .idea/
 .metals/
 .xmake/
+.scala-build/

@@ -182,7 +182,7 @@ public:
             case 0x3f8:
 #if defined PROG_LAB2
                 rdata = 'T';
-#elif defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH
+#elif defined PROG_CRYPTONIGHT_BIN_PATH || defined PROG_MATRIX_BIN_PATH || defined PROG_FINAL_BIN_PATH
                 switch (cnt) {
                     case 0: {
                         rdata = 'G';

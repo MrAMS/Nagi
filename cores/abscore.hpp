@@ -41,6 +41,9 @@ public:
         bool operator==(const trace_t_struct& b) const{
             return !(*this!=b);
         }
+        bool ispc() const{
+            return this->addr>=GPR_NUM && this->mem_size==0;
+        }
         std::string str() const{
             if(this->mem_size==0){
                 if(this->addr>=GPR_NUM)
