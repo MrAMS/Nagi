@@ -5,3 +5,4 @@
 .metals/
 .xmake/
 .scala-build/
+compile_commands.json
