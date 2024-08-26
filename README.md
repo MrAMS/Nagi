@@ -12,7 +12,7 @@
 - 更友好的diff报错提示和僵死报错
 
 Nagi为2024年龙芯杯个人赛而设计，已实现：
-- 基于Verilator的RTL仿真核(`nagiCore`)
+- 基于Verilator的仿真的单/双发射LA32R处理器核[NagiCore](https://github.com/MrAMS/NagiCore)
 - 基于DPIC接口的性能计数器分析报告
 - [CEMU](https://github.com/cyyself/cemu)模拟器的接入（可作为Golden Model）
 - 两种调试波形文件记录方式：
