@@ -27,7 +27,7 @@ Nagi为2024年龙芯杯个人赛而设计，已实现：
 
 本项目开源的目的是提供一种思路和一种可能的实现，并不能完全开箱即用，您需要仿照`cores/nagiCore`进行您处理器核的接入。由于时间关系，无法形成详尽系统的文档，同时可能存在一些比赛时的硬编码和奇怪的代码风格，望谅。
 
-请先安装所需要的XMake、Verilator、GTKWave 等依赖软件和库，运行环境Linux(如Ubuntu 22.04 LTS)
+请先安装所需要的XMake、Verilator、GTKWave 等依赖软件和库，运行环境Linux(如Ubuntu 22.04 LTS)，并且拉取依赖的Git子仓库
 
 ```bash
 # 打开TUI进行配置
