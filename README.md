@@ -8,9 +8,9 @@
 - 更**细粒度**的跟踪：跟踪GPR读写事件、PC改变事件、访存读写事件，提供更精确的diff报错
 - 基于**事件**而非状态的跟踪：更少的性能开销、与微架构解耦的跟踪方式
 - 基于统一的**处理器抽象模型**：通过处理器抽象模型，让模拟器、RTL乃至FPGA、trace log能够大一统，difftest主函数只与抽象模型有关，新加入的目标只需要适配抽象模型即可开始difftest，从而实现“开发一次，difftest所有”
-- 更现代的**构建系统**：使用[XMake](https://xmake.io/)进行构建，相较于Makefile/CMakefile，性能更好，可读性更好
+- 更现代的**构建系统**：使用[XMake](https://xmake.io/)进行构建，相较于Makefile/CMakefile，并行构建性能更好，lua可读性更好
 - 更友好的diff报错提示和僵死报错
-- 已接入[gperftools](https://github.com/gperftools/gperftools)，开箱即用分析仿真程序性能瓶颈
+- 已接入[GPerfTools](https://github.com/gperftools/gperftools)，开箱即用，分析仿真程序性能瓶颈
 
 Nagi为2024年龙芯杯个人赛而设计，已实现：
 - 基于Verilator的仿真的单/双发射LA32R处理器核[NagiCore](https://github.com/MrAMS/NagiCore)
@@ -26,9 +26,9 @@ Nagi为2024年龙芯杯个人赛而设计，已实现：
 
 ## 使用说明
 
-本项目开源的目的是提供一种思路和一种可能的实现，并不能完全开箱即用，您需要仿照`cores/nagiCore`进行您处理器核的接入。由于时间关系，无法形成详尽系统的文档，同时可能存在一些比赛时的硬编码和奇怪的代码风格，望谅。
+本项目开源的目的是提供一种思路和一种可能的实现，并不能完全开箱即用，需要您大致浏览阅读代码并仿照`cores/nagiCore`进行您处理器核的接入。由于时间关系，无法形成详尽系统的文档，同时可能存在一些比赛时的硬编码和奇怪的代码风格，望谅。
 
-请先安装所需要的XMake、Verilator、GTKWave 等依赖软件和库，运行环境Linux(如Ubuntu 22.04 LTS)，并且拉取依赖的Git子仓库
+请先安装所需要的[XMake](https://github.com/xmake-io/xmake?tab=readme-ov-file#installation)、[Verilator](https://verilator.org/guide/latest/install.html)、[GTKWave](https://gtkwave.sourceforge.net/) 等依赖软件和库，运行环境Linux(如Ubuntu 22.04 LTS)，并且拉取依赖的Git子仓库
 
 ```bash
 # 打开TUI进行配置
