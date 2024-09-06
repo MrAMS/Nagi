@@ -10,6 +10,7 @@
 - 基于统一的**处理器抽象模型**：通过处理器抽象模型，让模拟器、RTL乃至FPGA、trace log能够大一统，difftest主函数只与抽象模型有关，新加入的目标只需要适配抽象模型即可开始difftest，从而实现“开发一次，difftest所有”
 - 更现代的**构建系统**：使用[XMake](https://xmake.io/)进行构建，相较于Makefile/CMakefile，性能更好，可读性更好
 - 更友好的diff报错提示和僵死报错
+- 已接入[gperftools](https://github.com/gperftools/gperftools)，开箱即用分析仿真程序性能瓶颈
 
 Nagi为2024年龙芯杯个人赛而设计，已实现：
 - 基于Verilator的仿真的单/双发射LA32R处理器核[NagiCore](https://github.com/MrAMS/NagiCore)
